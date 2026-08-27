@@ -1,0 +1,47 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+}
+
+html, 
+body {
+  height: 100%;
+}
+
+body {
+  font-size: 1.2rem;
+  font-family: sans-serif;
+}
+
+.colors {
+  display: flex;
+}
+
+.color {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+}
+
+.user {
+  overflow: hidden;
+}
+
+.user video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#capture {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem;
+}
