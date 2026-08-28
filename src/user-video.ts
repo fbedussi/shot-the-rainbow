@@ -37,7 +37,11 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private async startWebcam() {
-		const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+		const stream = await navigator.mediaDevices.getUserMedia({
+			video: {
+				facingMode: "environment",
+			},
+		});
 		this.video.srcObject = stream;
 		this.video.autoplay = true;
 		this.video.playsInline = true;
