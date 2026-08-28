@@ -9,7 +9,25 @@
 </head>
 
 <body>
+  <dialog id="instructions">
+    <p class="title">How to play</p>
+    <div>
+      <p>You have to create a 🌈 pedestrian cross to help the 🦄 to cross the road.</p>
+      <p>You will see a color, you need to find something around you with the same color, frame it with the camera and tap on it.</p>
+    </div>
+    <button type="button" commandfor="instructions" command="close">Ok, let's play</button>
+  </dialog>
+
+  <dialog id="win">
+    <div class="unicorn">🦄</div>
+    <div>
+      <p class="title">You won!</p>
+    </div>
+    <button type="button">restart</button>
+  </dialog>
+
   <div class="colors"></div>
+  
   <script type="module" src="/src/main.ts"></script>
 </body>
 

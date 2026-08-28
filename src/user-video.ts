@@ -1,7 +1,8 @@
 export class UserVideo extends HTMLElement {
 	video: HTMLVideoElement;
 	targetHue?: number;
-	sampleRadius = 25;
+	sampleRadius = 15;
+	tolerance = 0.15;
 	active: boolean;
 	avgHue: number;
 
@@ -114,9 +115,8 @@ export class UserVideo extends HTMLElement {
 		this.avgHue = this.getAverageHueAt(x, y);
 		const diff = Math.abs(this.avgHue - targetHue);
 		const circularDiff = Math.min(diff, 360 - diff);
-		const tolerance = targetHue * 0.2;
 
-		return circularDiff <= tolerance;
+		return circularDiff <= targetHue * this.tolerance;
 	}
 
 	// shows a temporary square over the area of the video that was sampled

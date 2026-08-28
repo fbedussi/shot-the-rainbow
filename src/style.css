@@ -18,6 +18,41 @@ body {
 	font-family: sans-serif;
 }
 
+dialog:open {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	border-radius: 10px;
+	border: solid 1px black;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1rem;
+
+	.title {
+		font-size: 2rem;
+		font-weight: bold;
+		margin-bottom: 0.75rem;
+	}
+
+	p + p {
+		margin-top: 0.5rem;
+	}
+
+	&::backdrop {
+		background-color: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(5px);
+	}
+}
+
+button {
+	border-radius: 10px;
+	border: solid 1px black;
+	padding: 1rem;
+	font: inherit;
+}
+
 .colors {
 	display: flex;
 	width: 100%;
@@ -29,6 +64,24 @@ color-bar {
 	width: 100%;
 	display: grid;
 	grid-template-rows: 1fr 1fr;
+
+	.target {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 4rem;
+
+		div {
+			display: none;
+			background-color: white;
+			padding: 1.5rem;
+			border-radius: 5rem;
+		}
+	}
+
+	&[active="true"] .target div {
+		display: block;
+	}
 
 	button {
 		position: fixed;
@@ -56,5 +109,22 @@ user-video {
 		border: 2px solid white;
 		outline: 2px solid red;
 		pointer-events: none;
+	}
+}
+
+#win {
+	padding-top: 3rem;
+	overflow: visible;
+
+	.unicorn {
+		background-color: white;
+		padding: 1.5rem;
+		border-radius: 5rem;
+		position: absolute;
+		font-size: 2rem;
+		top: 0;
+		left: 50%;
+		border: solid 1px black;
+		transform: translate(-50%, -50%);
 	}
 }

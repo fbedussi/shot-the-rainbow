@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
-    "type-check": "tsc --noEmit",
+		"type-check": "tsc --noEmit",
 		"preview": "vite preview",
 		"lint": "npx biome check",
 		"lint:fix": "npx @biomejs/biome check --write"

@@ -13,6 +13,8 @@ export class ColorBar extends HTMLElement {
 
 		this.active = false;
 		this.target = document.createElement("div");
+		this.target.className = "target";
+		this.target.innerHTML = `<div>🦄</div>`;
 		this.userVideo = document.createElement("user-video") as UserVideo;
 	}
 

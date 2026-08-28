@@ -32,6 +32,12 @@ function getTargetHue() {
 }
 
 function main() {
+	document.querySelector<HTMLDialogElement>("#instructions")?.showModal();
+	const winDialog = document.querySelector<HTMLDialogElement>("#win");
+	winDialog?.querySelector("button")?.addEventListener("click", () => {
+		window.location.reload();
+	});
+
 	addColorBar();
 
 	let wins = 0;
@@ -46,7 +52,8 @@ function main() {
 			if (wins < maxWins) {
 				addColorBar();
 			} else {
-				alert("you won!");
+				currentColorBar?.setAttribute("active", "false");
+				winDialog?.showModal();
 			}
 		}
 	});
