@@ -6,25 +6,30 @@ customElements.define("user-video", UserVideo);
 customElements.define("color-bar", ColorBar);
 
 const colorsEl = document.querySelector(".colors")!;
-const targetHues: number[] = [];
+const targetCols: number[][] = [];
 let currentColorBar: ColorBar | undefined;
 
 function addColorBar() {
 	currentColorBar?.setAttribute("active", "false");
 	currentColorBar = document.createElement("color-bar") as ColorBar;
 	currentColorBar.setAttribute("active", "true");
-	const targetHue = getTargetHue();
-	currentColorBar.setAttribute("target-hue", targetHue.toString());
-	targetHues.push(targetHue);
+	const targetCol = [
+		getTargetVal(0, 360, 50, 0),
+		getTargetVal(25, 75, 15, 1),
+		getTargetVal(25, 75, 15, 2),
+	];
+	currentColorBar.setAttribute("target-col", targetCol.join(","));
+	targetCols.push(targetCol);
 	colorsEl.appendChild(currentColorBar);
 }
 
-function getTargetHue() {
-	const MIN_DIST = 50;
-	const getCandidate = () => Math.round(Math.random() * 360);
+function getTargetVal(min: number, max: number, minDist: number, i: number) {
+	const getCandidate = () => Math.min(max, Math.max(min, Math.round(Math.random() * max)));
 	let candidate = getCandidate();
 
-	while (targetHues.some((oldHue) => Math.abs(oldHue - candidate) < MIN_DIST)) {
+	while (
+		targetCols.some((oldCol) => Math.abs(oldCol[i] - candidate) < minDist)
+	) {
 		candidate = getCandidate();
 	}
 

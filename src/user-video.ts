@@ -1,10 +1,12 @@
 export class UserVideo extends HTMLElement {
 	video: HTMLVideoElement;
-	targetHue?: number;
+	targetCol: [number, number, number];
 	sampleRadius = 15;
-	tolerance = 0.15;
+	toleranceHue = 20;
+	toleranceSaturation = 20;
+	toleranceLightness = 20;
 	active: boolean;
-	avgHue: number;
+	avgCol: [number, number, number];
 
 	static observedAttributes = ["active"];
 
@@ -13,17 +15,22 @@ export class UserVideo extends HTMLElement {
 
 		this.video = document.createElement("video");
 		this.active = false;
-		this.avgHue = 0;
+		this.avgCol = [0, 0, 0];
+		this.targetCol = [0, 0, 0];
 	}
 
 	connectedCallback() {
 		this.active = this.getAttribute("active") === "true";
-		this.targetHue = Number(this.getAttribute("target-hue"));
+		const attr = this.getAttribute("target-col")?.split(",").map(Number);
+		this.targetCol =
+			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
+		console.log('targetCol', this.targetCol)
 		this.appendChild(this.video);
 
-		this.startWebcam().catch((err) =>
-			console.error("Could not access webcam", err),
-		);
+		this.startWebcam().catch((err) => {
+			console.error("Could not access webcam", err);
+			alert("Could not access webcam");
+		});
 
 		this.addEventListener("click", this.takeImage);
 	}
@@ -50,14 +57,19 @@ export class UserVideo extends HTMLElement {
 
 	private freezeVideo() {
 		this.video.remove();
-		this.style.backgroundColor = `hsl(${this.avgHue} 100% 50%)`;
+		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 	}
 
-	private rgbToHue(r: number, g: number, b: number) {
+	private rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+		r /= 255;
+		g /= 255;
+		b /= 255;
 		const max = Math.max(r, g, b);
 		const min = Math.min(r, g, b);
 		const delta = max - min;
-		if (delta === 0) return 0;
+		const lightness = (max + min) / 2;
+
+		if (delta === 0) return [0, 0, lightness * 100];
 
 		let hue: number;
 		if (max === r) hue = ((g - b) / delta) % 6;
@@ -65,7 +77,10 @@ export class UserVideo extends HTMLElement {
 		else hue = (r - g) / delta + 4;
 
 		hue *= 60;
-		return hue < 0 ? hue + 360 : hue;
+		if (hue < 0) hue += 360;
+
+		const saturation = delta / (1 - Math.abs(2 * lightness - 1));
+		return [hue, saturation * 100, lightness * 100];
 	}
 
 	// maps a click/tap position to the underlying video frame, accounting for object-fit: cover scaling
@@ -87,7 +102,7 @@ export class UserVideo extends HTMLElement {
 		};
 	}
 
-	private getAverageHueAt(x: number, y: number) {
+	private getAverageColAt(x: number, y: number): [number, number, number] {
 		const canvas = document.createElement("canvas");
 		canvas.width = this.video.videoWidth;
 		canvas.height = this.video.videoHeight;
@@ -101,22 +116,36 @@ export class UserVideo extends HTMLElement {
 
 		const { data } = ctx.getImageData(left, top, width, height);
 
-		let total = 0;
+		let totalHue = 0;
+		let totalSaturation = 0;
+		let totalLightness = 0;
 		let count = 0;
 		for (let i = 0; i < data.length; i += 4) {
-			total += this.rgbToHue(data[i], data[i + 1], data[i + 2]);
+			const [hue, saturation, lightness] = this.rgbToHsl(
+				data[i],
+				data[i + 1],
+				data[i + 2],
+			);
+			totalHue += hue;
+			totalSaturation += saturation;
+			totalLightness += lightness;
 			count++;
 		}
 
-		return total / count;
+		return [Math.round(totalHue / count), Math.round(totalSaturation / count), Math.round(totalLightness / count)];
 	}
 
-	private checkColor(targetHue: number, x: number, y: number) {
-		this.avgHue = this.getAverageHueAt(x, y);
-		const diff = Math.abs(this.avgHue - targetHue);
-		const circularDiff = Math.min(diff, 360 - diff);
+	private checkColor(x: number, y: number) {
+		const hueDiff = Math.abs(this.avgCol[0] - this.targetCol[0]);
+		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
+		const saturationDiff = Math.abs(this.avgCol[1] - this.targetCol[1]);
+		const lightnessDiff = Math.abs(this.avgCol[2] - this.targetCol[2]);
 
-		return circularDiff <= targetHue * this.tolerance;
+		return (
+			circularHueDiff <= this.toleranceHue &&
+			saturationDiff <= this.toleranceSaturation &&
+			lightnessDiff <= this.toleranceLightness
+		);
 	}
 
 	// shows a temporary square over the area of the video that was sampled
@@ -138,10 +167,6 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private takeImage = (event: MouseEvent) => {
-		if (!this.targetHue) {
-			throw new Error("targetHue not set");
-		}
-
 		const rect = this.getBoundingClientRect();
 		const scale = Math.max(
 			rect.width / this.video.videoWidth,
@@ -151,7 +176,17 @@ export class UserVideo extends HTMLElement {
 		const { x, y } = this.getVideoPoint(event.clientX, event.clientY);
 		this.showSampleMarker(rect, event.clientX, event.clientY, scale);
 
-		const win = this.checkColor(this.targetHue, x, y);
+		this.avgCol = this.getAverageColAt(x, y);
+
+		const avgColEl = document.createElement('div')
+		avgColEl.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`
+		avgColEl.className = 'avg-col'
+		this.appendChild(avgColEl)
+		console.log('avgCol', this.avgCol, avgColEl)
+		setTimeout(() => avgColEl.remove(), 500);
+
+		const win = this.checkColor(x, y);
+
 		document.body.dispatchEvent(
 			new CustomEvent("shot-taken", {
 				detail: {

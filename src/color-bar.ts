@@ -4,7 +4,7 @@ export class ColorBar extends HTMLElement {
 	userVideo: UserVideo;
 	target: HTMLElement;
 	active: boolean;
-	targetHue?: string;
+	targetCol: [number, number, number];
 
 	static observedAttributes = ["active"];
 
@@ -16,12 +16,15 @@ export class ColorBar extends HTMLElement {
 		this.target.className = "target";
 		this.target.innerHTML = `<div>🦄</div>`;
 		this.userVideo = document.createElement("user-video") as UserVideo;
+		this.targetCol = [0, 0, 0];
 	}
 
 	connectedCallback() {
-		this.targetHue = this.getAttribute("target-hue")!;
-		this.target.style.backgroundColor = `hsl(${this.targetHue} 100% 50%)`;
-		this.userVideo.setAttribute("target-hue", this.targetHue);
+		const attr = this.getAttribute("target-Col")?.split(",").map(Number);
+		this.targetCol =
+			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
+		this.target.style.backgroundColor = `hsl(${this.targetCol[0]}deg ${this.targetCol[1]}% ${this.targetCol[2]}%)`;
+		this.userVideo.setAttribute("target-col", this.targetCol.join(","));
 		this.appendChild(this.target);
 		this.appendChild(this.userVideo);
 		this.active = this.getAttribute("active") === "true";
