@@ -29,7 +29,7 @@ header {
 	display: flex;
 	gap: 2rem;
 	text-transform: uppercase;
-	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 	font-weight: bold;
 	font-size: 0.75rem;
 	position: fixed;
@@ -37,10 +37,10 @@ header {
 	left: 50%;
 	transform: translateX(-50%);
 
-	>div {
+	> div {
 		background-color: white;
 		border-radius: 0 0 5px 5px;
-		padding: 0.25rem .5rem;
+		padding: 0.25rem 0.5rem;
 		text-align: center;
 		width: 10em;
 		color: darkgray;
@@ -74,8 +74,8 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p+p {
-		margin-top: .75rem;
+	p + p {
+		margin-top: 0.75rem;
 	}
 
 	button {

@@ -26,7 +26,7 @@ export class UserVideo extends HTMLElement {
 			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
 
 		if (this.active) {
-			this.initVideo()
+			this.initVideo();
 		}
 	}
 
@@ -37,7 +37,7 @@ export class UserVideo extends HTMLElement {
 			this.removeEventListener("click", this.takeImage);
 			this.freezeVideo();
 		} else {
-			this.initVideo()
+			this.initVideo();
 		}
 	}
 
@@ -148,11 +148,11 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private checkColor() {
-		if (window.location.search.includes('debug')) {
+		if (window.location.search.includes("debug")) {
 			return {
 				win: true,
 				points: 100,
-			}
+			};
 		}
 
 		const hueDiff = Math.abs(this.avgCol[0] - this.targetCol[0]);
@@ -160,10 +160,15 @@ export class UserVideo extends HTMLElement {
 		const saturationDiff = Math.abs(this.avgCol[1] - this.targetCol[1]);
 		const lightnessDiff = Math.abs(this.avgCol[2] - this.targetCol[2]);
 
-		const win = circularHueDiff <= this.toleranceHue &&
+		const win =
+			circularHueDiff <= this.toleranceHue &&
 			saturationDiff <= this.toleranceSaturation &&
-			lightnessDiff <= this.toleranceLightness
-		const points = (this.toleranceHue + this.toleranceSaturation + this.toleranceLightness) - (circularHueDiff + saturationDiff + lightnessDiff)
+			lightnessDiff <= this.toleranceLightness;
+		const points =
+			this.toleranceHue +
+			this.toleranceSaturation +
+			this.toleranceLightness -
+			(circularHueDiff + saturationDiff + lightnessDiff);
 
 		return {
 			win,
