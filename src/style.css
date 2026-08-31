@@ -41,7 +41,7 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p+p {
+	p + p {
 		margin-top: 0.5rem;
 	}
 

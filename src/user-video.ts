@@ -24,7 +24,7 @@ export class UserVideo extends HTMLElement {
 		const attr = this.getAttribute("target-col")?.split(",").map(Number);
 		this.targetCol =
 			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
-		console.log('targetCol', this.targetCol)
+		console.log("targetCol", this.targetCol);
 		this.appendChild(this.video);
 
 		this.startWebcam().catch((err) => {
@@ -132,10 +132,14 @@ export class UserVideo extends HTMLElement {
 			count++;
 		}
 
-		return [Math.round(totalHue / count), Math.round(totalSaturation / count), Math.round(totalLightness / count)];
+		return [
+			Math.round(totalHue / count),
+			Math.round(totalSaturation / count),
+			Math.round(totalLightness / count),
+		];
 	}
 
-	private checkColor(x: number, y: number) {
+	private checkColor() {
 		const hueDiff = Math.abs(this.avgCol[0] - this.targetCol[0]);
 		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
 		const saturationDiff = Math.abs(this.avgCol[1] - this.targetCol[1]);
@@ -178,14 +182,14 @@ export class UserVideo extends HTMLElement {
 
 		this.avgCol = this.getAverageColAt(x, y);
 
-		const avgColEl = document.createElement('div')
-		avgColEl.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`
-		avgColEl.className = 'avg-col'
-		this.appendChild(avgColEl)
-		console.log('avgCol', this.avgCol, avgColEl)
+		const avgColEl = document.createElement("div");
+		avgColEl.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
+		avgColEl.className = "avg-col";
+		this.appendChild(avgColEl);
+		console.log("avgCol", this.avgCol, avgColEl);
 		setTimeout(() => avgColEl.remove(), 500);
 
-		const win = this.checkColor(x, y);
+		const win = this.checkColor();
 
 		document.body.dispatchEvent(
 			new CustomEvent("shot-taken", {

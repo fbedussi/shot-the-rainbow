@@ -24,7 +24,8 @@ function addColorBar() {
 }
 
 function getTargetVal(min: number, max: number, minDist: number, i: number) {
-	const getCandidate = () => Math.min(max, Math.max(min, Math.round(Math.random() * max)));
+	const getCandidate = () =>
+		Math.min(max, Math.max(min, Math.round(Math.random() * max)));
 	let candidate = getCandidate();
 
 	while (
