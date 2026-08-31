@@ -7,20 +7,19 @@ customElements.define("color-bar", ColorBar);
 
 const colorsEl = document.querySelector(".colors")!;
 const targetCols: number[][] = [];
-let currentColorBar: ColorBar | undefined;
+let currentColorBarIndex = 0
 
-function addColorBar() {
-	currentColorBar?.setAttribute("active", "false");
-	currentColorBar = document.createElement("color-bar") as ColorBar;
-	currentColorBar.setAttribute("active", "true");
+function addColorBar(active: boolean) {
+	const colorBar = document.createElement("color-bar") as ColorBar;
+	colorBar.setAttribute("active", active.toString());
 	const targetCol = [
-		getTargetVal(0, 360, 50, 0),
-		getTargetVal(25, 75, 15, 1),
-		getTargetVal(25, 75, 15, 2),
+		getTargetVal(0, 360, 25, 0),
+		getTargetVal(25, 75, 0, 1),
+		getTargetVal(25, 75, 0, 2),
 	];
-	currentColorBar.setAttribute("target-col", targetCol.join(","));
+	colorBar.setAttribute("target-col", targetCol.join(","));
 	targetCols.push(targetCol);
-	colorsEl.appendChild(currentColorBar);
+	colorsEl.appendChild(colorBar);
 }
 
 function getTargetVal(min: number, max: number, minDist: number, i: number) {
@@ -38,16 +37,29 @@ function getTargetVal(min: number, max: number, minDist: number, i: number) {
 }
 
 function main() {
-	document.querySelector<HTMLDialogElement>("#instructions")?.showModal();
-	const winDialog = document.querySelector<HTMLDialogElement>("#win");
+	const qs = new URLSearchParams(window.location.search)
+	const level = Number(qs.get('level') ?? '1')
+
+	if (level === 1) {
+		document.querySelector<HTMLDialogElement>("#instructions")!.showModal();
+		localStorage.removeItem('points')
+	} else {
+		document.querySelector('header .points span')!.textContent = localStorage.getItem('points')
+	}
+
+	const winDialog = document.querySelector<HTMLDialogElement>("#win")!;
 	winDialog?.querySelector("button")?.addEventListener("click", () => {
-		window.location.reload();
+		qs.set('level', (level + 1).toString())
+		window.location.search = qs.toString()
 	});
 
-	addColorBar();
+	const numberOfBars = level * 2 + 1
+	for (let i = 0; i < numberOfBars; i++) {
+		addColorBar(i === 0);
+	}
+	const colorBars = Array.from(document.querySelectorAll('color-bar'))
 
 	let wins = 0;
-	const maxWins = 3;
 
 	document.body.addEventListener("shot-taken", (ev) => {
 		const event = ev as CustomEvent;
@@ -55,11 +67,18 @@ function main() {
 		if (event.detail.win) {
 			wins++;
 
-			if (wins < maxWins) {
-				addColorBar();
+			const points = Number(localStorage.getItem('points') ?? '0') + event.detail.points
+			localStorage.setItem('points', points)
+			document.querySelector('header .points span')!.textContent = points
+
+			colorBars[currentColorBarIndex].setAttribute("active", "false");
+
+			if (wins < numberOfBars) {
+				currentColorBarIndex++
+				colorBars[currentColorBarIndex].setAttribute("active", "true");
 			} else {
-				currentColorBar?.setAttribute("active", "false");
-				winDialog?.showModal();
+				winDialog.querySelector('#level')!.textContent = (level + 1).toString()
+				winDialog.showModal();
 			}
 		}
 	});

@@ -14,8 +14,10 @@
     <div class="content">
       <p>You have to create a 🌈 pedestrian cross to help the 🦄 to cross the road.</p>
       <p>You will see a color, you need to find something around you with the same color, frame it with the camera and tap on it.</p>
+      <p>The closer you get, the more points you'll earn.</p>
+      <p>If it's not close enought the color won't be accepted.</p>
     </div>
-    <button type="button" commandfor="instructions" command="close">Ok, let's play</button>
+    <button type="button" commandfor="instructions" command="close">Ok, let's play!</button>
   </dialog>
 
   <dialog id="win">
@@ -23,8 +25,13 @@
     <div class="content">
       <p class="title">You won!</p>
     </div>
-    <button type="button">restart</button>
+    <button type="button">Proceed to level <span id="level">2</span></button>
   </dialog>
+
+  <header>
+    <div class="level">level: <span>1</span></div>
+    <div class="points">points: <span>0</span></div>
+  </header>
 
   <div class="colors"></div>
   

@@ -1,10 +1,10 @@
 export class UserVideo extends HTMLElement {
 	video: HTMLVideoElement;
 	targetCol: [number, number, number];
-	sampleRadius = 15;
-	toleranceHue = 20;
-	toleranceSaturation = 20;
-	toleranceLightness = 20;
+	sampleRadius = 16;
+	toleranceHue = 25;
+	toleranceSaturation = 25;
+	toleranceLightness = 25;
 	active: boolean;
 	avgCol: [number, number, number];
 
@@ -24,15 +24,10 @@ export class UserVideo extends HTMLElement {
 		const attr = this.getAttribute("target-col")?.split(",").map(Number);
 		this.targetCol =
 			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
-		console.log("targetCol", this.targetCol);
-		this.appendChild(this.video);
 
-		this.startWebcam().catch((err) => {
-			console.error("Could not access webcam", err);
-			alert("Could not access webcam");
-		});
-
-		this.addEventListener("click", this.takeImage);
+		if (this.active) {
+			this.initVideo()
+		}
 	}
 
 	attributeChangedCallback(_name: string, _oldValue: string, newValue: string) {
@@ -41,7 +36,20 @@ export class UserVideo extends HTMLElement {
 		if (!this.active) {
 			this.removeEventListener("click", this.takeImage);
 			this.freezeVideo();
+		} else {
+			this.initVideo()
 		}
+	}
+
+	private initVideo() {
+		this.appendChild(this.video);
+
+		this.startWebcam().catch((err) => {
+			console.error("Could not access webcam", err);
+			alert("Could not access webcam");
+		});
+
+		this.addEventListener("click", this.takeImage);
 	}
 
 	private async startWebcam() {
@@ -140,16 +148,27 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private checkColor() {
+		if (window.location.search.includes('debug')) {
+			return {
+				win: true,
+				points: 100,
+			}
+		}
+
 		const hueDiff = Math.abs(this.avgCol[0] - this.targetCol[0]);
 		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
 		const saturationDiff = Math.abs(this.avgCol[1] - this.targetCol[1]);
 		const lightnessDiff = Math.abs(this.avgCol[2] - this.targetCol[2]);
 
-		return (
-			circularHueDiff <= this.toleranceHue &&
+		const win = circularHueDiff <= this.toleranceHue &&
 			saturationDiff <= this.toleranceSaturation &&
 			lightnessDiff <= this.toleranceLightness
-		);
+		const points = (this.toleranceHue + this.toleranceSaturation + this.toleranceLightness) - (circularHueDiff + saturationDiff + lightnessDiff)
+
+		return {
+			win,
+			points,
+		};
 	}
 
 	// shows a temporary square over the area of the video that was sampled
@@ -189,12 +208,13 @@ export class UserVideo extends HTMLElement {
 		console.log("avgCol", this.avgCol, avgColEl);
 		setTimeout(() => avgColEl.remove(), 500);
 
-		const win = this.checkColor();
+		const { win, points } = this.checkColor();
 
 		document.body.dispatchEvent(
 			new CustomEvent("shot-taken", {
 				detail: {
 					win,
+					points,
 				},
 			}),
 		);

@@ -2,6 +2,11 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
+	outline: transparent;
+
+	&:focus-visible {
+		outline: solid 2px red;
+	}
 }
 
 button {
@@ -16,6 +21,34 @@ body {
 body {
 	font-size: 1.2rem;
 	font-family: sans-serif;
+	display: flex;
+	flex-direction: column;
+}
+
+header {
+	display: flex;
+	gap: 2rem;
+	text-transform: uppercase;
+	font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	font-weight: bold;
+	font-size: 0.75rem;
+	position: fixed;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+
+	>div {
+		background-color: white;
+		border-radius: 0 0 5px 5px;
+		padding: 0.25rem .5rem;
+		text-align: center;
+		width: 10em;
+		color: darkgray;
+
+		span {
+			color: black;
+		}
+	}
 }
 
 dialog:open {
@@ -41,8 +74,8 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p + p {
-		margin-top: 0.5rem;
+	p+p {
+		margin-top: .75rem;
 	}
 
 	button {
@@ -63,7 +96,7 @@ dialog:open {
 .colors {
 	display: flex;
 	width: 100%;
-	height: 100%;
+	flex: 1;
 }
 
 color-bar {
