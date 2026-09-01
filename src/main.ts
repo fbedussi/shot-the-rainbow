@@ -112,7 +112,7 @@ document.body.addEventListener("shot-taken", (ev) => {
 		if (wins < numberOfBars) {
 			const { avgCol } = event.detail;
 			const targetCol = targetCols[currentColorBarIndex];
-			const gradient = `linear-gradient(to right top, hsl(${targetCol[0]}deg ${targetCol[1]}% ${targetCol[2]}%) 50%, hsl(${avgCol[0]}deg ${avgCol[1]}% ${avgCol[2]}%) 50%)`;
+			const gradient = `linear-gradient(to top, hsl(${targetCol[0]}deg ${targetCol[1]}% ${targetCol[2]}%) 50%, hsl(${avgCol[0]}deg ${avgCol[1]}% ${avgCol[2]}%) 50%)`;
 			swatches[currentColorBarIndex].style.background = gradient;
 
 			currentColorBarIndex++;

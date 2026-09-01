@@ -211,6 +211,10 @@ user-video {
 	right: 1rem;
 	z-index: 1;
 	border-radius: 5rem;
+	text-transform: uppercase;
+	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+	font-weight: bold;
+	font-size: 0.75rem;
 }
 
 .mute {

@@ -4,9 +4,9 @@ export class UserVideo extends HTMLElement {
 	private video: HTMLVideoElement;
 	private targetCol: [number, number, number];
 	private sampleRadius = 16;
-	private toleranceHue = 25;
-	private toleranceSaturation = 25;
-	private toleranceLightness = 25;
+	private toleranceHue = 28;
+	private toleranceSaturation = 28;
+	private toleranceLightness = 28;
 	private active: boolean;
 	private avgCol: [number, number, number];
 	private canvas: HTMLCanvasElement;
@@ -14,7 +14,7 @@ export class UserVideo extends HTMLElement {
 	private playBeep: boolean;
 	private nextBeep?: boolean;
 
-	static observedAttributes = ["active", "muted"];
+	static observedAttributes = ["active", "muted", "target-col"];
 
 	constructor() {
 		super();
@@ -52,6 +52,12 @@ export class UserVideo extends HTMLElement {
 
 		if (name === 'muted') {
 			this.playBeep = newValue === 'false'
+		}
+
+		if (name === 'target-col') {
+			const attr = newValue?.split(",").map(Number);
+			this.targetCol =
+				attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
 		}
 	}
 
@@ -103,10 +109,12 @@ export class UserVideo extends HTMLElement {
 
 		const hueDiff = Math.abs(avgCol[0] - this.targetCol[0]);
 		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
-		const hueDiffPercentage = Math.round((circularHueDiff / 360) * 100);
+		const hueRatio = circularHueDiff / 360;
+		const saturationRatio = Math.abs(avgCol[1] - this.targetCol[1]) / 100;
+		const lightnessRatio = Math.abs(avgCol[2] - this.targetCol[2]) / 100;
 
 		// 0 = perfect match, 1 = as far as possible
-		const diffRatio = hueDiffPercentage / 100;
+		const diffRatio = (hueRatio + saturationRatio + lightnessRatio) / 3;
 
 		const minInterval = 100;
 		const maxInterval = 2000;
@@ -178,6 +186,39 @@ export class UserVideo extends HTMLElement {
 		};
 	}
 
+	// hue is circular (0-360deg), so it must be averaged as an angle (via its
+	// sin/cos components) rather than summed directly, otherwise samples near
+	// the 0/360 wrap-around (e.g. red) can average out to the opposite hue
+	private averageHsl(data: Uint8ClampedArray): [number, number, number] {
+		let sumSin = 0;
+		let sumCos = 0;
+		let totalSaturation = 0;
+		let totalLightness = 0;
+		let count = 0;
+		for (let i = 0; i < data.length; i += 4) {
+			const [hue, saturation, lightness] = this.rgbToHsl(
+				data[i],
+				data[i + 1],
+				data[i + 2],
+			);
+			const hueRad = (hue * Math.PI) / 180;
+			sumSin += Math.sin(hueRad);
+			sumCos += Math.cos(hueRad);
+			totalSaturation += saturation;
+			totalLightness += lightness;
+			count++;
+		}
+
+		let avgHue = (Math.atan2(sumSin / count, sumCos / count) * 180) / Math.PI;
+		if (avgHue < 0) avgHue += 360;
+
+		return [
+			Math.round(avgHue),
+			Math.round(totalSaturation / count),
+			Math.round(totalLightness / count),
+		];
+	}
+
 	private getAverageColAt(x: number, y: number): [number, number, number] {
 		if (!this.ctx) {
 			throw new Error("ctx not initialized");
@@ -192,27 +233,7 @@ export class UserVideo extends HTMLElement {
 
 		const { data } = this.ctx.getImageData(left, top, width, height);
 
-		let totalHue = 0;
-		let totalSaturation = 0;
-		let totalLightness = 0;
-		let count = 0;
-		for (let i = 0; i < data.length; i += 4) {
-			const [hue, saturation, lightness] = this.rgbToHsl(
-				data[i],
-				data[i + 1],
-				data[i + 2],
-			);
-			totalHue += hue;
-			totalSaturation += saturation;
-			totalLightness += lightness;
-			count++;
-		}
-
-		return [
-			Math.round(totalHue / count),
-			Math.round(totalSaturation / count),
-			Math.round(totalLightness / count),
-		];
+		return this.averageHsl(data);
 	}
 
 	private getAverageCol(): [number, number, number] {
@@ -229,30 +250,10 @@ export class UserVideo extends HTMLElement {
 			this.canvas.height,
 		);
 
-		let totalHue = 0;
-		let totalSaturation = 0;
-		let totalLightness = 0;
-		let count = 0;
-		for (let i = 0; i < data.length; i += 4) {
-			const [hue, saturation, lightness] = this.rgbToHsl(
-				data[i],
-				data[i + 1],
-				data[i + 2],
-			);
-			totalHue += hue;
-			totalSaturation += saturation;
-			totalLightness += lightness;
-			count++;
-		}
-
-		return [
-			Math.round(totalHue / count),
-			Math.round(totalSaturation / count),
-			Math.round(totalLightness / count),
-		];
+		return this.averageHsl(data);
 	}
-
 	private checkColor() {
+
 		if (window.location.search.includes("debug")) {
 			return {
 				win: true,
