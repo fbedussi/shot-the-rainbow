@@ -6,7 +6,7 @@ export class ColorBar extends HTMLElement {
 	active: boolean;
 	targetCol: [number, number, number];
 
-	static observedAttributes = ["active"];
+	static observedAttributes = ["active", "target-col"];
 
 	constructor() {
 		super();
@@ -14,17 +14,12 @@ export class ColorBar extends HTMLElement {
 		this.active = false;
 		this.target = document.createElement("div");
 		this.target.className = "target";
-		this.target.innerHTML = `<div>🦄</div>`;
 		this.userVideo = document.createElement("user-video") as UserVideo;
 		this.targetCol = [0, 0, 0];
 	}
 
 	connectedCallback() {
-		const attr = this.getAttribute("target-Col")?.split(",").map(Number);
-		this.targetCol =
-			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
-		this.target.style.backgroundColor = `hsl(${this.targetCol[0]}deg ${this.targetCol[1]}% ${this.targetCol[2]}%)`;
-		this.userVideo.setAttribute("target-col", this.targetCol.join(","));
+		this.setTaragetColFromAttr();
 		this.appendChild(this.target);
 		this.appendChild(this.userVideo);
 		this.active = this.getAttribute("active") === "true";
@@ -38,21 +33,35 @@ export class ColorBar extends HTMLElement {
 		this.disableShot();
 	}
 
-	attributeChangedCallback(_name: string, _oldValue: string, newValue: string) {
-		this.active = newValue === "true";
+	attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
+		if (name === "active") {
+			this.active = newValue === "true";
 
-		if (this.active) {
-			this.enableShot();
-		} else {
-			this.disableShot();
+			if (this.active) {
+				this.enableShot();
+			} else {
+				this.disableShot();
+			}
+		}
+
+		if (name === "target-col") {
+			this.setTaragetColFromAttr();
 		}
 	}
 
-	enableShot() {
+	private setTaragetColFromAttr() {
+		const attr = this.getAttribute("target-Col")?.split(",").map(Number);
+		this.targetCol =
+			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
+		this.target.style.backgroundColor = `hsl(${this.targetCol[0]}deg ${this.targetCol[1]}% ${this.targetCol[2]}%)`;
+		this.userVideo.setAttribute("target-col", this.targetCol.join(","));
+	}
+
+	private enableShot() {
 		this.userVideo.setAttribute("active", "true");
 	}
 
-	disableShot() {
+	private disableShot() {
 		this.userVideo.setAttribute("active", "false");
 	}
 }

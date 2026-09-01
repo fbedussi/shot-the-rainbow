@@ -210,7 +210,6 @@ export class UserVideo extends HTMLElement {
 		avgColEl.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 		avgColEl.className = "avg-col";
 		this.appendChild(avgColEl);
-		console.log("avgCol", this.avgCol, avgColEl);
 		setTimeout(() => avgColEl.remove(), 500);
 
 		const { win, points } = this.checkColor();
@@ -220,6 +219,7 @@ export class UserVideo extends HTMLElement {
 				detail: {
 					win,
 					points,
+					avgCol: this.avgCol,
 				},
 			}),
 		);
