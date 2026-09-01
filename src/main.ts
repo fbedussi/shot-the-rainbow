@@ -19,6 +19,8 @@ const colorBar = document.querySelector("color-bar")!;
 
 const path = document.querySelector(".path")!;
 const qs = new URLSearchParams(window.location.search);
+let muted = qs.get('muted') === 'true'
+const muteBtn = document.querySelector(".mute")!
 
 function createColor() {
 	const targetCol = [
@@ -68,15 +70,15 @@ if (level === 1) {
 winDialog?.querySelector("button")?.addEventListener("click", () => {
 	qs.set("level", (level + 1).toString());
 	qs.set("points", points.toString());
+	qs.set("muted", muted.toString())
 	window.location.search = qs.toString();
 });
 
-let muted = false
-document.querySelector(".mute")?.addEventListener("click", (ev) => {
+muteBtn.textContent = muted ? 'unmute' : 'mute'
+muteBtn.addEventListener("click", () => {
 	document.querySelector('user-video')!.setAttribute('muted', (!muted).toString())
 	muted = !muted
-	const button = ev.target as HTMLButtonElement
-	button.textContent = muted ? 'unmute' : 'mute'
+	muteBtn.textContent = muted ? 'unmute' : 'mute'
 });
 
 document.querySelector(".restart")?.addEventListener("click", () => {
