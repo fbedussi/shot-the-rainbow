@@ -1,14 +1,20 @@
-export class UserVideo extends HTMLElement {
-	video: HTMLVideoElement;
-	targetCol: [number, number, number];
-	sampleRadius = 16;
-	toleranceHue = 25;
-	toleranceSaturation = 25;
-	toleranceLightness = 25;
-	active: boolean;
-	avgCol: [number, number, number];
+import { playBeep } from "./audio";
 
-	static observedAttributes = ["active"];
+export class UserVideo extends HTMLElement {
+	private video: HTMLVideoElement;
+	private targetCol: [number, number, number];
+	private sampleRadius = 16;
+	private toleranceHue = 25;
+	private toleranceSaturation = 25;
+	private toleranceLightness = 25;
+	private active: boolean;
+	private avgCol: [number, number, number];
+	private canvas: HTMLCanvasElement;
+	private ctx?: CanvasRenderingContext2D;
+	private playBeep: boolean;
+	private nextBeep?: boolean;
+
+	static observedAttributes = ["active", "muted"];
 
 	constructor() {
 		super();
@@ -17,6 +23,8 @@ export class UserVideo extends HTMLElement {
 		this.active = false;
 		this.avgCol = [0, 0, 0];
 		this.targetCol = [0, 0, 0];
+		this.canvas = document.createElement("canvas");
+		this.playBeep = false;
 	}
 
 	connectedCallback() {
@@ -30,24 +38,36 @@ export class UserVideo extends HTMLElement {
 		}
 	}
 
-	attributeChangedCallback(_name: string, _oldValue: string, newValue: string) {
-		this.active = newValue === "true";
+	attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
+		if (name === 'active') {
+			this.active = newValue === "true";
 
-		if (!this.active) {
-			this.removeEventListener("click", this.takeImage);
-			this.freezeVideo();
-		} else {
-			this.initVideo();
+			if (!this.active) {
+				this.removeEventListener("click", this.takeImage);
+				this.freezeVideo();
+			} else {
+				this.initVideo();
+			}
+		}
+
+		if (name === 'muted') {
+			this.playBeep = newValue === 'false'
 		}
 	}
 
 	private initVideo() {
 		this.appendChild(this.video);
 
-		this.startWebcam().catch((err) => {
-			console.error("Could not access webcam", err);
-			alert("Could not access webcam");
-		});
+		this.startWebcam()
+			.catch((err) => {
+				console.error("Could not access webcam", err);
+				alert("Could not access webcam");
+			})
+			.then(() => {
+				this.playBeep = this.getAttribute('muted') === 'false';
+				setTimeout(() => { }, 3000);
+				this.initBeep();
+			});
 
 		this.addEventListener("click", this.takeImage);
 	}
@@ -61,9 +81,57 @@ export class UserVideo extends HTMLElement {
 		this.video.srcObject = stream;
 		this.video.autoplay = true;
 		this.video.playsInline = true;
+
+		// videoWidth/videoHeight are only available once metadata has loaded
+		await new Promise<void>((resolve) => {
+			if (this.video.readyState >= 1) {
+				resolve();
+			} else {
+				this.video.addEventListener("loadedmetadata", () => resolve(), {
+					once: true,
+				});
+			}
+		});
+
+		this.canvas.width = this.video.videoWidth;
+		this.canvas.height = this.video.videoHeight;
+		this.ctx = this.canvas.getContext("2d", { willReadFrequently: true })!;
+	}
+
+	private initBeep() {
+		const avgCol = this.getAverageCol();
+
+		const hueDiff = Math.abs(avgCol[0] - this.targetCol[0]);
+		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
+		const hueDiffPercentage = Math.round((circularHueDiff / 360) * 100);
+
+		// 0 = perfect match, 1 = as far as possible
+		const diffRatio = hueDiffPercentage / 100;
+
+		const minInterval = 100;
+		const maxInterval = 2000;
+		// closer match -> shorter interval -> faster beeping, like a geiger counter
+		const interval = minInterval + diffRatio * (maxInterval - minInterval);
+
+		const minPitch = 400;
+		const maxPitch = 1200;
+		// closer match -> higher pitch
+		const pitch = maxPitch - diffRatio * (maxPitch - minPitch);
+
+		if (!this.nextBeep) {
+			this.nextBeep = true;
+			setTimeout(() => {
+				if (this.playBeep) {
+					playBeep(pitch);
+				}
+				this.nextBeep = false;
+				this.initBeep();
+			}, interval);
+		}
 	}
 
 	private freezeVideo() {
+		this.playBeep = false;
 		this.video.remove();
 		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 	}
@@ -111,18 +179,55 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private getAverageColAt(x: number, y: number): [number, number, number] {
-		const canvas = document.createElement("canvas");
-		canvas.width = this.video.videoWidth;
-		canvas.height = this.video.videoHeight;
-		const ctx = canvas.getContext("2d")!;
-		ctx.drawImage(this.video, 0, 0);
+		if (!this.ctx) {
+			throw new Error("ctx not initialized");
+		}
+
+		this.ctx.drawImage(this.video, 0, 0);
 
 		const left = Math.max(0, Math.round(x - this.sampleRadius));
 		const top = Math.max(0, Math.round(y - this.sampleRadius));
-		const width = Math.min(canvas.width - left, this.sampleRadius * 2);
-		const height = Math.min(canvas.height - top, this.sampleRadius * 2);
+		const width = Math.min(this.canvas.width - left, this.sampleRadius * 2);
+		const height = Math.min(this.canvas.height - top, this.sampleRadius * 2);
 
-		const { data } = ctx.getImageData(left, top, width, height);
+		const { data } = this.ctx.getImageData(left, top, width, height);
+
+		let totalHue = 0;
+		let totalSaturation = 0;
+		let totalLightness = 0;
+		let count = 0;
+		for (let i = 0; i < data.length; i += 4) {
+			const [hue, saturation, lightness] = this.rgbToHsl(
+				data[i],
+				data[i + 1],
+				data[i + 2],
+			);
+			totalHue += hue;
+			totalSaturation += saturation;
+			totalLightness += lightness;
+			count++;
+		}
+
+		return [
+			Math.round(totalHue / count),
+			Math.round(totalSaturation / count),
+			Math.round(totalLightness / count),
+		];
+	}
+
+	private getAverageCol(): [number, number, number] {
+		if (!this.ctx) {
+			throw new Error("ctx not initialized");
+		}
+
+		this.ctx.drawImage(this.video, 0, 0);
+
+		const { data } = this.ctx.getImageData(
+			0,
+			0,
+			this.canvas.width,
+			this.canvas.height,
+		);
 
 		let totalHue = 0;
 		let totalSaturation = 0;

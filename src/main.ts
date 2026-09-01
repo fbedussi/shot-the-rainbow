@@ -1,3 +1,4 @@
+import { playLooseTune, playWonTune } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
 import { UserVideo } from "./user-video";
@@ -59,12 +60,23 @@ setPoints(Number(qs.get("points") ?? "0"));
 
 if (level === 1) {
 	instructionsDialog.showModal();
+	instructionsDialog.querySelector('button')?.addEventListener('click', () => {
+		document.querySelector('user-video')!.setAttribute('muted', 'false')
+	})
 }
 
 winDialog?.querySelector("button")?.addEventListener("click", () => {
 	qs.set("level", (level + 1).toString());
 	qs.set("points", points.toString());
 	window.location.search = qs.toString();
+});
+
+let muted = false
+document.querySelector(".mute")?.addEventListener("click", (ev) => {
+	document.querySelector('user-video')!.setAttribute('muted', (!muted).toString())
+	muted = !muted
+	const button = ev.target as HTMLButtonElement
+	button.textContent = muted ? 'unmute' : 'mute'
 });
 
 document.querySelector(".restart")?.addEventListener("click", () => {
@@ -91,6 +103,8 @@ document.body.addEventListener("shot-taken", (ev) => {
 	const event = ev as CustomEvent;
 
 	if (event.detail.win) {
+		playWonTune();
+
 		wins++;
 
 		setPoints(points + event.detail.points);
@@ -113,5 +127,7 @@ document.body.addEventListener("shot-taken", (ev) => {
 			colorBar.setAttribute("active", "false");
 			winDialog.showModal();
 		}
+	} else {
+		playLooseTune();
 	}
 });
