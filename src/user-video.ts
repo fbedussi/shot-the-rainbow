@@ -39,7 +39,7 @@ export class UserVideo extends HTMLElement {
 	}
 
 	attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
-		if (name === 'active') {
+		if (name === "active") {
 			this.active = newValue === "true";
 
 			if (!this.active) {
@@ -50,14 +50,16 @@ export class UserVideo extends HTMLElement {
 			}
 		}
 
-		if (name === 'muted') {
-			this.playBeep = newValue === 'false'
+		if (name === "muted") {
+			this.playBeep = newValue === "false";
 		}
 
-		if (name === 'target-col') {
+		if (name === "target-col") {
 			const attr = newValue?.split(",").map(Number);
 			this.targetCol =
-				attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
+				attr && attr.length === 3
+					? [attr[0], attr[1], attr[2]]
+					: this.targetCol;
 		}
 	}
 
@@ -70,8 +72,8 @@ export class UserVideo extends HTMLElement {
 				alert("Could not access webcam");
 			})
 			.then(() => {
-				this.playBeep = this.getAttribute('muted') === 'false';
-				setTimeout(() => { }, 3000);
+				this.playBeep = this.getAttribute("muted") === "false";
+				setTimeout(() => {}, 3000);
 				this.initBeep();
 			});
 
@@ -253,7 +255,6 @@ export class UserVideo extends HTMLElement {
 		return this.averageHsl(data);
 	}
 	private checkColor() {
-
 		if (window.location.search.includes("debug")) {
 			return {
 				win: true,

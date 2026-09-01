@@ -19,8 +19,8 @@ const colorBar = document.querySelector("color-bar")!;
 
 const path = document.querySelector(".path")!;
 const qs = new URLSearchParams(window.location.search);
-let muted = qs.get('muted') === 'true'
-const muteBtn = document.querySelector(".mute")!
+let muted = qs.get("muted") === "true";
+const muteBtn = document.querySelector(".mute")!;
 
 function createColor() {
 	const targetCol = [
@@ -62,23 +62,25 @@ setPoints(Number(qs.get("points") ?? "0"));
 
 if (level === 1) {
 	instructionsDialog.showModal();
-	instructionsDialog.querySelector('button')?.addEventListener('click', () => {
-		document.querySelector('user-video')!.setAttribute('muted', 'false')
-	})
+	instructionsDialog.querySelector("button")?.addEventListener("click", () => {
+		document.querySelector("user-video")!.setAttribute("muted", "false");
+	});
 }
 
 winDialog?.querySelector("button")?.addEventListener("click", () => {
 	qs.set("level", (level + 1).toString());
 	qs.set("points", points.toString());
-	qs.set("muted", muted.toString())
+	qs.set("muted", muted.toString());
 	window.location.search = qs.toString();
 });
 
-muteBtn.textContent = muted ? 'unmute' : 'mute'
+muteBtn.textContent = muted ? "unmute" : "mute";
 muteBtn.addEventListener("click", () => {
-	document.querySelector('user-video')!.setAttribute('muted', (!muted).toString())
-	muted = !muted
-	muteBtn.textContent = muted ? 'unmute' : 'mute'
+	document
+		.querySelector("user-video")!
+		.setAttribute("muted", (!muted).toString());
+	muted = !muted;
+	muteBtn.textContent = muted ? "unmute" : "mute";
 });
 
 document.querySelector(".restart")?.addEventListener("click", () => {
