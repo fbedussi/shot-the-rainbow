@@ -67,6 +67,10 @@ winDialog?.querySelector("button")?.addEventListener("click", () => {
 	window.location.search = qs.toString();
 });
 
+document.querySelector(".restart")?.addEventListener("click", () => {
+	window.location.search = "";
+});
+
 for (let i = 0; i < numberOfBars; i++) {
 	createColor();
 }
