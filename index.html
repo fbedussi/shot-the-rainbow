@@ -5,36 +5,55 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>js13k</title>
+  <title>John the unicorn</title>
 </head>
 
 <body>
   <dialog id="instructions">
     <p class="title">How to play</p>
     <div class="content">
-      <p>You have to create a 🌈 pedestrian cross to help the 🦄 to cross the road.</p>
-      <p>You will see a color, you need to find something around you with the same color, frame it with the camera and tap on it.</p>
+      <p>This is a tale of two 🦄, John and Jean.</p>
+      <p>Jean is waiting for John on the other side of the road. She is very impatient and will go away in a short time if John doesn't reach her quickly.</p>
+      <p>But John cannot cross the road, since there is no pedestrian crossing.</p>
+      <p>Unicorns can only use special 🌈 pedestrian crossing, help him in creating one!</p>
+      <p>For every crossing stripe, you will see a color. You need to find something around you with the same color, frame it with the camera and tap on it.</p>
       <p>The closer you get, the more points you'll earn.</p>
-      <p>If it's not close enought the color won't be accepted.</p>
+      <p>If it's not close enough the color won't be accepted.</p>
+      <p>Good luck!</p>
     </div>
     <button type="button" commandfor="instructions" command="close">Ok, let's play!</button>
   </dialog>
 
   <dialog id="win">
     <div class="unicorn">🦄</div>
+    <div class="unicorn john">🦄</div>
     <div class="content">
       <p class="title">You won!</p>
+      <p>John reached Jean and they will spend a perfect day drinking sangria in the park.</p>
+      <p><strong>Your total score is <span class="points">0</span></strong></p>
     </div>
-    <button type="button">Proceed to level <span id="level">2</span></button>
+    <button type="button" class="restart">Retry to score better</button>
+  </dialog>
+
+  <dialog id="loose">
+    <div class="unicorn">🦄</div>
+    <div class="content">
+      <p class="title">You lose!</p>
+      <p>Unfortunately Jean got bored and left.</p>
+      <p>John is left alone and sad.</p>
+    </div>
+    <button type="button" class="restart">retry</button>
   </dialog>
 
   <header>
-    <div class="level">level: <span>1</span></div>
-    <div class="points">points: <span>0</span></div>
+    <div>
+      <div class="points">points: <span>0</span></div>
+    </div>
+    
+    <div class="timer">1:00</div>
+    
+    <button type="button" class="mute">mute</button>
   </header>
-
-  <button type="button" class="mute">mute</button>
-  <button type="button" class="restart">restart</button>
 
   <div class="path"></div>
 

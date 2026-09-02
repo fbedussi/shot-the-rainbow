@@ -1,5 +1,3 @@
-import { playBeep } from "./audio";
-
 export class UserVideo extends HTMLElement {
 	private video: HTMLVideoElement;
 	private targetCol: [number, number, number];
@@ -11,10 +9,8 @@ export class UserVideo extends HTMLElement {
 	private avgCol: [number, number, number];
 	private canvas: HTMLCanvasElement;
 	private ctx?: CanvasRenderingContext2D;
-	private playBeep: boolean;
-	private nextBeep?: boolean;
 
-	static observedAttributes = ["active", "muted", "target-col"];
+	static observedAttributes = ["active", "target-col"] as const;
 
 	constructor() {
 		super();
@@ -24,7 +20,6 @@ export class UserVideo extends HTMLElement {
 		this.avgCol = [0, 0, 0];
 		this.targetCol = [0, 0, 0];
 		this.canvas = document.createElement("canvas");
-		this.playBeep = false;
 	}
 
 	connectedCallback() {
@@ -38,44 +33,41 @@ export class UserVideo extends HTMLElement {
 		}
 	}
 
-	attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
-		if (name === "active") {
-			this.active = newValue === "true";
+	attributeChangedCallback(
+		name: (typeof UserVideo.observedAttributes)[number],
+		_oldValue: string,
+		newValue: string,
+	) {
+		switch (name) {
+			case "active": {
+				this.active = newValue === "true";
 
-			if (!this.active) {
-				this.removeEventListener("click", this.takeImage);
-				this.freezeVideo();
-			} else {
-				this.initVideo();
+				if (!this.active) {
+					this.removeEventListener("click", this.takeImage);
+					this.freezeVideo();
+				} else {
+					this.initVideo();
+				}
+				break;
 			}
-		}
-
-		if (name === "muted") {
-			this.playBeep = newValue === "false";
-		}
-
-		if (name === "target-col") {
-			const attr = newValue?.split(",").map(Number);
-			this.targetCol =
-				attr && attr.length === 3
-					? [attr[0], attr[1], attr[2]]
-					: this.targetCol;
+			case "target-col": {
+				const attr = newValue?.split(",").map(Number);
+				this.targetCol =
+					attr && attr.length === 3
+						? [attr[0], attr[1], attr[2]]
+						: this.targetCol;
+				break;
+			}
 		}
 	}
 
 	private initVideo() {
 		this.appendChild(this.video);
 
-		this.startWebcam()
-			.catch((err) => {
-				console.error("Could not access webcam", err);
-				alert("Could not access webcam");
-			})
-			.then(() => {
-				this.playBeep = this.getAttribute("muted") === "false";
-				setTimeout(() => {}, 3000);
-				this.initBeep();
-			});
+		this.startWebcam().catch((err) => {
+			console.error("Could not access webcam", err);
+			alert("Could not access webcam");
+		});
 
 		this.addEventListener("click", this.takeImage);
 	}
@@ -106,42 +98,7 @@ export class UserVideo extends HTMLElement {
 		this.ctx = this.canvas.getContext("2d", { willReadFrequently: true })!;
 	}
 
-	private initBeep() {
-		const avgCol = this.getAverageCol();
-
-		const hueDiff = Math.abs(avgCol[0] - this.targetCol[0]);
-		const circularHueDiff = Math.min(hueDiff, 360 - hueDiff);
-		const hueRatio = circularHueDiff / 360;
-		const saturationRatio = Math.abs(avgCol[1] - this.targetCol[1]) / 100;
-		const lightnessRatio = Math.abs(avgCol[2] - this.targetCol[2]) / 100;
-
-		// 0 = perfect match, 1 = as far as possible
-		const diffRatio = (hueRatio + saturationRatio + lightnessRatio) / 3;
-
-		const minInterval = 100;
-		const maxInterval = 2000;
-		// closer match -> shorter interval -> faster beeping, like a geiger counter
-		const interval = minInterval + diffRatio * (maxInterval - minInterval);
-
-		const minPitch = 400;
-		const maxPitch = 1200;
-		// closer match -> higher pitch
-		const pitch = maxPitch - diffRatio * (maxPitch - minPitch);
-
-		if (!this.nextBeep) {
-			this.nextBeep = true;
-			setTimeout(() => {
-				if (this.playBeep) {
-					playBeep(pitch);
-				}
-				this.nextBeep = false;
-				this.initBeep();
-			}, interval);
-		}
-	}
-
 	private freezeVideo() {
-		this.playBeep = false;
 		this.video.remove();
 		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 	}
@@ -238,22 +195,6 @@ export class UserVideo extends HTMLElement {
 		return this.averageHsl(data);
 	}
 
-	private getAverageCol(): [number, number, number] {
-		if (!this.ctx) {
-			throw new Error("ctx not initialized");
-		}
-
-		this.ctx.drawImage(this.video, 0, 0);
-
-		const { data } = this.ctx.getImageData(
-			0,
-			0,
-			this.canvas.width,
-			this.canvas.height,
-		);
-
-		return this.averageHsl(data);
-	}
 	private checkColor() {
 		if (window.location.search.includes("debug")) {
 			return {

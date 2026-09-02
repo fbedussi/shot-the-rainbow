@@ -1,6 +1,8 @@
 import { playLooseTune, playWonTune } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
+import qs from "./qs";
+import { startTimer, stopTimer } from "./timer";
 import { UserVideo } from "./user-video";
 
 customElements.define("user-video", UserVideo);
@@ -8,18 +10,17 @@ customElements.define("color-bar", ColorBar);
 
 const targetCols: number[][] = [];
 let currentColorBarIndex = 0;
-let numberOfBars = 3;
+const numberOfBars = 10;
 let points = 0;
-let level = 1;
 let wins = 0;
 const winDialog = document.querySelector<HTMLDialogElement>("#win")!;
+const loosDialog = document.querySelector<HTMLDialogElement>("#loose")!;
 const instructionsDialog =
 	document.querySelector<HTMLDialogElement>("#instructions")!;
 const colorBar = document.querySelector("color-bar")!;
 
 const path = document.querySelector(".path")!;
-const qs = new URLSearchParams(window.location.search);
-let muted = qs.get("muted") === "true";
+let muted = qs.getItem("muted") === "true";
 const muteBtn = document.querySelector(".mute")!;
 
 function createColor() {
@@ -47,44 +48,29 @@ function setPoints(p: number) {
 	points = p;
 	document.querySelector("header .points span")!.textContent =
 		points.toString();
-}
-
-function setLevel(l: number) {
-	level = l;
-	numberOfBars = level * 2 + 1;
-	winDialog.querySelector("#level")!.textContent = (level + 1).toString();
-	document.querySelector("header .level span")!.textContent = level.toString();
+	winDialog.querySelector(".points")!.textContent = points.toString();
 }
 
 // main
-setLevel(Number(qs.get("level") ?? "1"));
-setPoints(Number(qs.get("points") ?? "0"));
-
-if (level === 1) {
-	instructionsDialog.showModal();
-	instructionsDialog.querySelector("button")?.addEventListener("click", () => {
+instructionsDialog.showModal();
+instructionsDialog.querySelector("button")?.addEventListener("click", () => {
+	if (!muted) {
 		document.querySelector("user-video")!.setAttribute("muted", "false");
-	});
-}
-
-winDialog?.querySelector("button")?.addEventListener("click", () => {
-	qs.set("level", (level + 1).toString());
-	qs.set("points", points.toString());
-	qs.set("muted", muted.toString());
-	window.location.search = qs.toString();
+	}
+	startTimer();
 });
 
 muteBtn.textContent = muted ? "unmute" : "mute";
 muteBtn.addEventListener("click", () => {
-	document
-		.querySelector("user-video")!
-		.setAttribute("muted", (!muted).toString());
 	muted = !muted;
+	qs.replaceItem("muted", muted.toString());
 	muteBtn.textContent = muted ? "unmute" : "mute";
 });
 
-document.querySelector(".restart")?.addEventListener("click", () => {
-	window.location.search = "";
+document.body.addEventListener("click", (ev) => {
+	if (ev.target instanceof HTMLElement && ev.target.className === "restart") {
+		window.location.search = "";
+	}
 });
 
 for (let i = 0; i < numberOfBars; i++) {
@@ -97,17 +83,30 @@ targetCols.forEach((color, i) => {
 	swatch.style.backgroundColor = `hsl(${color[0]}deg ${color[1]}% ${color[2]}%)`;
 	path.appendChild(swatch);
 });
+const pathEnd = document.createElement("div");
+pathEnd.className = "path-end";
+path.appendChild(pathEnd);
+
 const swatches = Array.from(
 	document.querySelectorAll(".swatch"),
 ) as HTMLDivElement[];
 
 colorBar.setAttribute("target-col", targetCols[currentColorBarIndex].join(","));
 
+document.body.addEventListener("timer-expired", () => {
+	if (!muted) {
+		playLooseTune();
+	}
+	loosDialog.showModal();
+});
+
 document.body.addEventListener("shot-taken", (ev) => {
 	const event = ev as CustomEvent;
 
 	if (event.detail.win) {
-		playWonTune();
+		if (!muted) {
+			playWonTune();
+		}
 
 		wins++;
 
@@ -129,9 +128,8 @@ document.body.addEventListener("shot-taken", (ev) => {
 			);
 		} else {
 			colorBar.setAttribute("active", "false");
+			stopTimer();
 			winDialog.showModal();
 		}
-	} else {
-		playLooseTune();
 	}
 });
