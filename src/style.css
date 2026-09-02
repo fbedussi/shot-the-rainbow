@@ -10,6 +10,7 @@ button {
 }
 
 @keyframes impatient {
+
 	0%,
 	100% {
 		transform: rotate(0deg);
@@ -25,6 +26,7 @@ button {
 }
 
 @keyframes impatient-flipped {
+
 	0%,
 	100% {
 		transform: scale(-1, 1) rotate(0deg);
@@ -63,9 +65,10 @@ dialog:open {
 	align-items: center;
 	gap: 1.25rem;
 	width: min(90vw, 500px);
+	font-size: 1.1rem;
 
 	.title {
-		font-size: 2rem;
+		font-size: 1.7em;
 		font-weight: bold;
 		text-align: center;
 		padding: 1rem 1rem 0;
@@ -75,7 +78,7 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p + p {
+	p+p {
 		margin-top: 0.75rem;
 	}
 
@@ -154,7 +157,7 @@ header {
 				animation: impatient-flipped 0.4s ease-in-out infinite;
 			}
 
-			~ .swatch::before {
+			~.swatch::before {
 				content: "";
 				position: absolute;
 				width: 100%;

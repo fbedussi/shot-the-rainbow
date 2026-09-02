@@ -2,7 +2,7 @@ import { playLooseTune, playWonTune } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
 import qs from "./qs";
-import { startTimer, stopTimer } from "./timer";
+import { getRemainingTime, startTimer, stopTimer } from "./timer";
 import { UserVideo } from "./user-video";
 
 customElements.define("user-video", UserVideo);
@@ -129,6 +129,8 @@ document.body.addEventListener("shot-taken", (ev) => {
 		} else {
 			colorBar.setAttribute("active", "false");
 			stopTimer();
+			const remainingMs = getRemainingTime()
+			setPoints(Math.round(points + (remainingMs / 1000) * 10))
 			winDialog.showModal();
 		}
 	}

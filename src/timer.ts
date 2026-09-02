@@ -33,3 +33,7 @@ function updateTimer() {
 export function stopTimer() {
 	window.clearInterval(timerId);
 }
+
+export function getRemainingTime() {
+	return ms
+}
