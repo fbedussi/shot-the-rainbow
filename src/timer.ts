@@ -35,5 +35,5 @@ export function stopTimer() {
 }
 
 export function getRemainingTime() {
-	return ms
+	return ms;
 }

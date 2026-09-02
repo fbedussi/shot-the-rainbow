@@ -119,9 +119,14 @@ document.body.addEventListener("shot-taken", (ev) => {
 			swatches[currentColorBarIndex].style.background = gradient;
 
 			currentColorBarIndex++;
-			swatches.forEach((swatch, i) => {
-				swatch.classList.toggle("active", i === currentColorBarIndex);
-			});
+			const setActiveSwatch = () => {
+				swatches.forEach((swatch, i) => {
+					swatch.classList.toggle("active", i === currentColorBarIndex);
+				});
+			};
+			document.startViewTransition
+				? document.startViewTransition(setActiveSwatch)
+				: setActiveSwatch();
 			colorBar.setAttribute(
 				"target-col",
 				targetCols[currentColorBarIndex].join(","),
@@ -129,8 +134,8 @@ document.body.addEventListener("shot-taken", (ev) => {
 		} else {
 			colorBar.setAttribute("active", "false");
 			stopTimer();
-			const remainingMs = getRemainingTime()
-			setPoints(Math.round(points + (remainingMs / 1000) * 10))
+			const remainingMs = getRemainingTime();
+			setPoints(Math.round(points + (remainingMs / 1000) * 10));
 			winDialog.showModal();
 		}
 	}

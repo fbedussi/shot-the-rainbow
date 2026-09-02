@@ -30,7 +30,11 @@ export class ColorBar extends HTMLElement {
 		this.disableShot();
 	}
 
-	attributeChangedCallback(name: typeof ColorBar.observedAttributes[number], _oldValue: string, newValue: string) {
+	attributeChangedCallback(
+		name: (typeof ColorBar.observedAttributes)[number],
+		_oldValue: string,
+		newValue: string,
+	) {
 		switch (name) {
 			case "active": {
 				this.active = newValue === "true";
@@ -40,13 +44,14 @@ export class ColorBar extends HTMLElement {
 				} else {
 					this.disableShot();
 				}
-				break
+				break;
 			}
 
-			case "target-col": {
-				this.setTaragetColFromAttr();
-			}
-				break
+			case "target-col":
+				{
+					this.setTaragetColFromAttr();
+				}
+				break;
 		}
 	}
 
