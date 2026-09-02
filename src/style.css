@@ -68,7 +68,7 @@ dialog:open {
 	font-size: 1.1rem;
 
 	.title {
-		font-size: 1.7em;
+		font-size: 1.5em;
 		font-weight: bold;
 		text-align: center;
 		padding: 1rem 1rem 0;
@@ -89,6 +89,9 @@ dialog:open {
 		padding: 1rem;
 		text-align: center;
 		background-color: ghostwhite;
+		text-transform: uppercase;
+		font-weight: bold;
+		font-size: .75em;
 	}
 
 	&::backdrop {
@@ -247,7 +250,8 @@ user-video {
 	}
 }
 
-#win {
+#win,
+#loose {
 	padding-top: 3rem;
 	overflow: visible;
 
@@ -269,5 +273,11 @@ user-video {
 
 	button {
 		border-radius: 0 0 10px 10px;
+	}
+}
+
+#loose {
+	.unicorn {
+		transform: translate(-50%, -50%);
 	}
 }

@@ -11,14 +11,14 @@ export function startTimer() {
 }
 
 function updateTimer() {
-	ms -= 1000;
-
 	if (ms <= 0) {
 		stopTimer();
 		document.body.dispatchEvent(new CustomEvent("timer-expired"));
 
 		return;
 	}
+
+	ms -= 1000;
 
 	const m = Math.trunc(ms / 60000);
 	const s = Math.trunc((ms / 1000) % 60000);
