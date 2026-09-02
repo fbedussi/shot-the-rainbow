@@ -2,7 +2,7 @@ import type { UserVideo } from "./user-video";
 
 export class ColorBar extends HTMLElement {
 	userVideo: UserVideo;
-	target: HTMLElement;
+	target: HTMLDivElement;
 	active: boolean;
 	targetCol: [number, number, number];
 
@@ -12,16 +12,13 @@ export class ColorBar extends HTMLElement {
 		super();
 
 		this.active = false;
-		this.target = document.createElement("div");
-		this.target.className = "target";
-		this.userVideo = document.createElement("user-video") as UserVideo;
+		this.target = this.querySelector<HTMLDivElement>(".target")!;
+		this.userVideo = this.querySelector<UserVideo>("user-video")!;
 		this.targetCol = [0, 0, 0];
 	}
 
 	connectedCallback() {
 		this.setTaragetColFromAttr();
-		this.appendChild(this.target);
-		this.appendChild(this.userVideo);
 		this.active = this.getAttribute("active") === "true";
 
 		if (this.active) {
@@ -33,19 +30,23 @@ export class ColorBar extends HTMLElement {
 		this.disableShot();
 	}
 
-	attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
-		if (name === "active") {
-			this.active = newValue === "true";
+	attributeChangedCallback(name: typeof ColorBar.observedAttributes[number], _oldValue: string, newValue: string) {
+		switch (name) {
+			case "active": {
+				this.active = newValue === "true";
 
-			if (this.active) {
-				this.enableShot();
-			} else {
-				this.disableShot();
+				if (this.active) {
+					this.enableShot();
+				} else {
+					this.disableShot();
+				}
+				break
 			}
-		}
 
-		if (name === "target-col") {
-			this.setTaragetColFromAttr();
+			case "target-col": {
+				this.setTaragetColFromAttr();
+			}
+				break
 		}
 	}
 
