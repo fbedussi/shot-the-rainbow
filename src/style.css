@@ -10,7 +10,6 @@ button {
 }
 
 @keyframes impatient {
-
 	0%,
 	100% {
 		transform: rotate(0deg);
@@ -26,7 +25,6 @@ button {
 }
 
 @keyframes impatient-flipped {
-
 	0%,
 	100% {
 		transform: scale(-1, 1) rotate(0deg);
@@ -42,7 +40,6 @@ button {
 }
 
 @keyframes pulse {
-
 	0%,
 	100% {
 		transform: translate(-50%, 40%) scale(1);
@@ -92,7 +89,7 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p+p {
+	p + p {
 		margin-top: 0.75rem;
 	}
 
@@ -180,7 +177,7 @@ header {
 				view-transition-name: unicorn-marker;
 			}
 
-			~.swatch::before {
+			~ .swatch::before {
 				content: "";
 				position: absolute;
 				width: 100%;
@@ -209,10 +206,11 @@ header {
 }
 
 color-bar {
-	height: 100%;
+	flex: 1;
 	width: 100%;
 	display: grid;
 	grid-template-rows: 1fr 1fr;
+	overflow: hidden;
 
 	.target {
 		display: flex;
