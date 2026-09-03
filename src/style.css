@@ -10,6 +10,7 @@ button {
 }
 
 @keyframes impatient {
+
 	0%,
 	100% {
 		transform: rotate(0deg);
@@ -25,6 +26,7 @@ button {
 }
 
 @keyframes impatient-flipped {
+
 	0%,
 	100% {
 		transform: scale(-1, 1) rotate(0deg);
@@ -40,6 +42,7 @@ button {
 }
 
 @keyframes pulse {
+
 	0%,
 	100% {
 		transform: translate(-50%, 40%) scale(1);
@@ -52,7 +55,9 @@ button {
 
 html,
 body {
-	height: 100vh;
+	height: 100%;
+	/* biome-ignore lint/suspicious/noDuplicateProperties: fallback */
+	height: 100dvh;
 }
 
 body {
@@ -87,7 +92,7 @@ dialog:open {
 		padding: 0 1rem;
 	}
 
-	p + p {
+	p+p {
 		margin-top: 0.75rem;
 	}
 
@@ -175,7 +180,7 @@ header {
 				view-transition-name: unicorn-marker;
 			}
 
-			~ .swatch::before {
+			~.swatch::before {
 				content: "";
 				position: absolute;
 				width: 100%;
