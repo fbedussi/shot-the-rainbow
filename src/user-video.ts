@@ -65,7 +65,6 @@ export class UserVideo extends HTMLElement {
 		this.appendChild(this.video);
 
 		this.startWebcam().catch((err) => {
-			console.error("Could not access webcam", err);
 			alert("Could not access webcam");
 		});
 
