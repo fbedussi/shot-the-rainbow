@@ -13,6 +13,15 @@ export const unmute = () => {
 	masterGainNode.gain.value = GAIN;
 };
 
+// prevents queued tones from playing silently in the background while the phone is locked/in standby
+document.addEventListener("visibilitychange", () => {
+	if (document.hidden) {
+		audioContext.suspend();
+	} else {
+		audioContext.resume();
+	}
+});
+
 export function playWonTune() {
 	// quick ascending run of sparkly bell notes, like a wand being waved, then a bright sustained finish
 	const sparkle = [1046.5, 1174.66, 1318.51, 1567.98, 1760];
