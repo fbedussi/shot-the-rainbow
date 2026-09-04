@@ -1,31 +1,31 @@
 import { playLooseTune, playWonTune } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
-import state from "./state";
+import state, { type Difficulty } from "./state";
 import { getRemainingTime, startTimer, stopTimer } from "./timer";
 import { UserVideo } from "./user-video";
 
 customElements.define("user-video", UserVideo);
 customElements.define("color-bar", ColorBar);
 
+const NUMBER_OF_BARS = 10;
+
 const targetCols: number[][] = [];
 let currentColorBarIndex = 0;
-const numberOfBars = 10;
 let points = 0;
 let wins = 0;
+
 const winDialog = document.querySelector<HTMLDialogElement>("#win")!;
 const loosDialog = document.querySelector<HTMLDialogElement>("#loose")!;
 const instructionsDialog =
 	document.querySelector<HTMLDialogElement>("#instructions")!;
 const colorBar = document.querySelector("color-bar")!;
-
 const path = document.querySelector(".path")!;
-let muted = state.getMuted();
 const muteBtn = document.querySelector(".mute")!;
 
 function createColor() {
 	const targetCol = [
-		getTargetHue(targetCols.length, numberOfBars),
+		getTargetHue(targetCols.length, NUMBER_OF_BARS),
 		getTargetVal(25, 75),
 		getTargetVal(25, 75),
 	];
@@ -54,7 +54,7 @@ function setPoints(p: number) {
 // main
 instructionsDialog.showModal();
 instructionsDialog.querySelector("button")?.addEventListener("click", () => {
-	if (!muted) {
+	if (!state.getMuted()) {
 		document.querySelector("user-video")!.setAttribute("muted", "false");
 	}
 	startTimer();
@@ -80,11 +80,10 @@ function onDifficultyChange(ev: Event) {
 	state.setDifficulty(target.value);
 }
 
-muteBtn.textContent = muted ? "unmute" : "mute";
+muteBtn.textContent = state.getMuted() ? "unmute" : "mute";
 muteBtn.addEventListener("click", () => {
-	muted = !muted;
-	state.setMuted(muted);
-	muteBtn.textContent = muted ? "unmute" : "mute";
+	state.setMuted(!state.getMuted());
+	muteBtn.textContent = state.getMuted() ? "unmute" : "mute";
 });
 
 document.body.addEventListener("click", (ev) => {
@@ -93,7 +92,7 @@ document.body.addEventListener("click", (ev) => {
 	}
 });
 
-for (let i = 0; i < numberOfBars; i++) {
+for (let i = 0; i < NUMBER_OF_BARS; i++) {
 	createColor();
 }
 
@@ -114,7 +113,7 @@ const swatches = Array.from(
 colorBar.setAttribute("target-col", targetCols[currentColorBarIndex].join(","));
 
 document.body.addEventListener("timer-expired", () => {
-	if (!muted) {
+	if (!state.getMuted()) {
 		playLooseTune();
 	}
 	loosDialog.showModal();
@@ -124,7 +123,7 @@ document.body.addEventListener("shot-taken", (ev) => {
 	const event = ev as CustomEvent;
 
 	if (event.detail.win) {
-		if (!muted) {
+		if (!state.getMuted()) {
 			playWonTune();
 		}
 
@@ -132,7 +131,7 @@ document.body.addEventListener("shot-taken", (ev) => {
 
 		setPoints(points + event.detail.points);
 
-		if (wins < numberOfBars) {
+		if (wins < NUMBER_OF_BARS) {
 			const { avgCol } = event.detail;
 			const targetCol = targetCols[currentColorBarIndex];
 			const gradient = `linear-gradient(to top, hsl(${targetCol[0]}deg ${targetCol[1]}% ${targetCol[2]}%) 50%, hsl(${avgCol[0]}deg ${avgCol[1]}% ${avgCol[2]}%) 50%)`;
@@ -155,7 +154,15 @@ document.body.addEventListener("shot-taken", (ev) => {
 			colorBar.setAttribute("active", "false");
 			stopTimer();
 			const remainingMs = getRemainingTime();
-			setPoints(Math.round(points + (remainingMs / 1000) * 10));
+			const difficulty = state.getDifficulty();
+			const multiplierMap: Record<Difficulty, number> = {
+				easy: 10,
+				medium: 20,
+				high: 30,
+			};
+			const multiplier = multiplierMap[difficulty];
+
+			setPoints(Math.round(points + (remainingMs / 1000) * multiplier));
 			winDialog.showModal();
 		}
 	}

@@ -21,14 +21,18 @@ function setMuted(muted: boolean) {
 }
 
 const DIFFICULTY = "difficulty";
-type Difficulty = "easy" | "medium" | "high";
+export type Difficulty = "easy" | "medium" | "high";
 
 function isDifficulty(candidate: string): candidate is Difficulty {
 	return ["easy", "medium", "high"].includes(candidate);
 }
 
 function getDifficulty(): Difficulty {
-	return getItem(DIFFICULTY) as Difficulty;
+	const difficulty = getItem(DIFFICULTY) ?? "medium";
+	if (!isDifficulty(difficulty)) {
+		throw new Error("wrong difficulty value");
+	}
+	return difficulty;
 }
 
 function setDifficulty(difficulty: Difficulty) {
