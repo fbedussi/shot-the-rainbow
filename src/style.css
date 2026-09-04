@@ -109,13 +109,62 @@ dialog:open {
 		background-color: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(5px);
 	}
+
+	fieldset {
+		padding: 1rem;
+		display: flex;
+		gap: 1.5rem;
+		border-radius: 5px;
+		margin-top: 2rem;
+	}
+}
+
+#win,
+#loose {
+	padding-top: 3rem;
+	overflow: visible;
+
+	.unicorn {
+		background-color: white;
+		padding: 1.5rem;
+		border-radius: 5rem;
+		position: absolute;
+		font-size: 2rem;
+		top: 0;
+		left: 50%;
+		border: solid 1px black;
+		transform: translate(-10%, -50%);
+
+		&.john {
+			transform: scale(-1, 1) translate(90%, -50%);
+		}
+	}
+
+	.heart {
+		position: absolute;
+		font-size: 1.5rem;
+		top: 0;
+		left: 50%;
+		transform: translate(-50%, 40%);
+		animation: pulse 0.6s ease-in-out infinite;
+	}
+
+	button {
+		border-radius: 0 0 10px 10px;
+	}
+}
+
+#loose {
+	.unicorn {
+		transform: translate(-50%, -50%);
+	}
 }
 
 header {
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-columns: 1fr min-content 1fr;
 	place-items: center;
-	gap: 2rem;
+	gap: 0.5rem;
 	text-transform: uppercase;
 	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 	font-size: 1rem;
@@ -124,10 +173,18 @@ header {
 	background-color: ghostwhite;
 	color: darkgray;
 
-	.points {
+	.score {
+		font-size: 0.5rem;
 		place-self: center start;
 
+		> * {
+			display: flex;
+			align-items: center;
+			gap: 0.5em;
+		}
+
 		span {
+			font-size: 0.75rem;
 			color: black;
 		}
 	}
@@ -265,46 +322,5 @@ user-video {
 		border: 2px solid white;
 		outline: 2px solid red;
 		pointer-events: none;
-	}
-}
-
-#win,
-#loose {
-	padding-top: 3rem;
-	overflow: visible;
-
-	.unicorn {
-		background-color: white;
-		padding: 1.5rem;
-		border-radius: 5rem;
-		position: absolute;
-		font-size: 2rem;
-		top: 0;
-		left: 50%;
-		border: solid 1px black;
-		transform: translate(-10%, -50%);
-
-		&.john {
-			transform: scale(-1, 1) translate(90%, -50%);
-		}
-	}
-
-	.heart {
-		position: absolute;
-		font-size: 1.5rem;
-		top: 0;
-		left: 50%;
-		transform: translate(-50%, 40%);
-		animation: pulse 0.6s ease-in-out infinite;
-	}
-
-	button {
-		border-radius: 0 0 10px 10px;
-	}
-}
-
-#loose {
-	.unicorn {
-		transform: translate(-50%, -50%);
 	}
 }

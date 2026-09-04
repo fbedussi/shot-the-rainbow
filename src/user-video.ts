@@ -1,10 +1,9 @@
+import state from "./state";
+
 export class UserVideo extends HTMLElement {
 	private video: HTMLVideoElement;
 	private targetCol: [number, number, number];
 	private sampleRadius = 16;
-	private toleranceHue = 28;
-	private toleranceSaturation = 28;
-	private toleranceLightness = 28;
 	private active: boolean;
 	private avgCol: [number, number, number];
 	private canvas: HTMLCanvasElement;
@@ -58,6 +57,39 @@ export class UserVideo extends HTMLElement {
 						: this.targetCol;
 				break;
 			}
+		}
+	}
+
+	private getToleranceHue() {
+		switch (state.getDifficulty()) {
+			case "easy":
+				return 38;
+			case "medium":
+				return 28;
+			case "high":
+				return 18;
+		}
+	}
+
+	private getToleranceSaturation() {
+		switch (state.getDifficulty()) {
+			case "easy":
+				return 38;
+			case "medium":
+				return 28;
+			case "high":
+				return 18;
+		}
+	}
+
+	private getToleranceLightness() {
+		switch (state.getDifficulty()) {
+			case "easy":
+				return 38;
+			case "medium":
+				return 28;
+			case "high":
+				return 18;
 		}
 	}
 
@@ -207,14 +239,18 @@ export class UserVideo extends HTMLElement {
 		const saturationDiff = Math.abs(this.avgCol[1] - this.targetCol[1]);
 		const lightnessDiff = Math.abs(this.avgCol[2] - this.targetCol[2]);
 
+		const toleranceHue = this.getToleranceHue();
+		const toleranceSaturation = this.getToleranceSaturation();
+		const toleranceLightness = this.getToleranceLightness();
+
 		const win =
-			circularHueDiff <= this.toleranceHue &&
-			saturationDiff <= this.toleranceSaturation &&
-			lightnessDiff <= this.toleranceLightness;
+			circularHueDiff <= toleranceHue &&
+			saturationDiff <= toleranceSaturation &&
+			lightnessDiff <= toleranceLightness;
 		const points =
-			this.toleranceHue +
-			this.toleranceSaturation +
-			this.toleranceLightness -
+			toleranceHue +
+			toleranceSaturation +
+			toleranceLightness -
 			(circularHueDiff + saturationDiff + lightnessDiff);
 
 		return {

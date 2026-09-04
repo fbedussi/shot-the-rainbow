@@ -1,5 +1,5 @@
 import { playBeep } from "./audio";
-import qs from "./qs";
+import state from "./state";
 
 const timerEl = document.querySelector(".timer")!;
 
@@ -24,8 +24,7 @@ function updateTimer() {
 	const s = Math.trunc((ms / 1000) % 60000);
 	timerEl.textContent = `${m}:${s < 10 ? 0 : ""}${s}`;
 
-	const muted = qs.getItem("muted") === "true";
-	if (!muted) {
+	if (!state.getMuted()) {
 		playBeep();
 	}
 }

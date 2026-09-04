@@ -16,6 +16,21 @@
       <p>Jean is waiting across the road and running out of patience. But without a pedestrian crossing, John can't get across!</p>
       <p>Unicorns can only use 🌈 crossings—help him build one!</p>
       <p>For each stripe, look around for matching real-world colors, line them up with your camera, and tap the screen. The closer the match, the more points you score!</p>
+      <fieldset>
+        <legend>Choose your difficulty:</legend>
+        <label>
+          <input type="radio" name="difficulty" value="easy"/>
+          Easy
+        </label>
+        <label>
+          <input type="radio" name="difficulty" value="medium" checked/>
+          Medium
+        </label>
+        <label>
+          <input type="radio" name="difficulty" value="high"/>
+          High
+        </label>
+      </fieldset>
     </div>
     <button type="button" commandfor="instructions" command="close">Ok, let's play!</button>
   </dialog>
@@ -43,7 +58,10 @@
   </dialog>
 
   <header>
-    <div class="points">points: <span>0</span></div>
+    <div class="score">
+      <div class="difficulty">difficulty: <span>medium</span></div>
+      <div class="points">points: <span>0</span></div>
+    </div>
     
     <div class="timer">1:00</div>
     

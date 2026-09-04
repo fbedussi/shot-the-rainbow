@@ -1,7 +1,7 @@
 import { playLooseTune, playWonTune } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
-import qs from "./qs";
+import state from "./state";
 import { getRemainingTime, startTimer, stopTimer } from "./timer";
 import { UserVideo } from "./user-video";
 
@@ -20,7 +20,7 @@ const instructionsDialog =
 const colorBar = document.querySelector("color-bar")!;
 
 const path = document.querySelector(".path")!;
-let muted = qs.getItem("muted") === "true";
+let muted = state.getMuted();
 const muteBtn = document.querySelector(".mute")!;
 
 function createColor() {
@@ -60,10 +60,30 @@ instructionsDialog.querySelector("button")?.addEventListener("click", () => {
 	startTimer();
 });
 
+const difficultyRadios = Array.from(
+	document.querySelectorAll<HTMLInputElement>('input[name="difficulty"]'),
+);
+difficultyRadios.forEach((difficultyRadio) => {
+	if (difficultyRadio.checked) {
+		if (!state.isDifficulty(difficultyRadio.value)) {
+			throw new Error("wrong difficulty value");
+		}
+		state.setDifficulty(difficultyRadio.value);
+	}
+	difficultyRadio.addEventListener("change", onDifficultyChange);
+});
+function onDifficultyChange(ev: Event) {
+	const target = ev.target as HTMLInputElement;
+	if (!state.isDifficulty(target.value)) {
+		throw new Error("wrong difficulty value");
+	}
+	state.setDifficulty(target.value);
+}
+
 muteBtn.textContent = muted ? "unmute" : "mute";
 muteBtn.addEventListener("click", () => {
 	muted = !muted;
-	qs.replaceItem("muted", muted.toString());
+	state.setMuted(muted);
 	muteBtn.textContent = muted ? "unmute" : "mute";
 });
 
