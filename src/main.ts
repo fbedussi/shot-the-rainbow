@@ -15,8 +15,8 @@ let currentColorBarIndex = 0;
 let points = 0;
 let wins = 0;
 
-const winDialog = document.querySelector<HTMLDialogElement>("#win")!;
-const loosDialog = document.querySelector<HTMLDialogElement>("#loose")!;
+const wonDialog = document.querySelector<HTMLDialogElement>("#win")!;
+const looseDialog = document.querySelector<HTMLDialogElement>("#loose")!;
 const instructionsDialog =
 	document.querySelector<HTMLDialogElement>("#instructions")!;
 const colorBar = document.querySelector("color-bar")!;
@@ -48,7 +48,7 @@ function setPoints(p: number) {
 	points = p;
 	document.querySelector("header .points span")!.textContent =
 		points.toString();
-	winDialog.querySelector(".points")!.textContent = points.toString();
+	wonDialog.querySelector(".points")!.textContent = points.toString();
 }
 
 // main
@@ -116,8 +116,22 @@ document.body.addEventListener("timer-expired", () => {
 	if (!state.getMuted()) {
 		playLooseTune();
 	}
-	loosDialog.showModal();
+
+	clonePathIn(looseDialog);
+
+	looseDialog.showModal();
 });
+
+function clonePathIn(parent: HTMLElement) {
+	const clonedPath = path.cloneNode(true);
+	Array.from(clonedPath.childNodes).forEach((swatch) => {
+		if (swatch instanceof Element) {
+			swatch.classList.toggle("active", false);
+		}
+	});
+	clonedPath.lastChild?.remove();
+	parent.insertBefore(clonedPath, parent.querySelector("button"));
+}
 
 document.body.addEventListener("shot-taken", (ev) => {
 	const event = ev as CustomEvent;
@@ -163,7 +177,10 @@ document.body.addEventListener("shot-taken", (ev) => {
 			const multiplier = multiplierMap[difficulty];
 
 			setPoints(Math.round(points + (remainingMs / 1000) * multiplier));
-			winDialog.showModal();
+
+			clonePathIn(wonDialog);
+
+			wonDialog.showModal();
 		}
 	}
 });

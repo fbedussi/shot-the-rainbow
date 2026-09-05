@@ -5,14 +5,6 @@ masterGainNode.connect(audioContext.destination);
 const GAIN = 0.15;
 masterGainNode.gain.value = GAIN;
 
-export const mute = () => {
-	masterGainNode.gain.value = 0;
-};
-
-export const unmute = () => {
-	masterGainNode.gain.value = GAIN;
-};
-
 // prevents queued tones from playing silently in the background while the phone is locked/in standby
 document.addEventListener("visibilitychange", () => {
 	if (document.hidden) {

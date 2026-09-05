@@ -74,7 +74,6 @@ dialog:open {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1.25rem;
 	width: min(90vw, 500px);
 	font-size: 1.1rem;
 
@@ -87,6 +86,7 @@ dialog:open {
 
 	.content {
 		padding: 0 1rem;
+		margin-bottom: 1.25rem;
 	}
 
 	p + p {
@@ -115,7 +115,7 @@ dialog:open {
 		display: flex;
 		gap: 1.5rem;
 		border-radius: 5px;
-		margin-top: 2rem;
+		margin-top: 1rem;
 		border: solid 1px black;
 		justify-content: center;
 	}
@@ -132,7 +132,7 @@ dialog:open {
 	overflow: visible;
 
 	.unicorn {
-		background-color: white;
+		background-color: pink;
 		padding: 1.5rem;
 		border-radius: 5rem;
 		position: absolute;
@@ -143,6 +143,7 @@ dialog:open {
 		transform: translate(-10%, -50%);
 
 		&.john {
+			background-color: white;
 			transform: scale(-1, 1) translate(90%, -50%);
 		}
 	}
