@@ -93,7 +93,7 @@ muteBtn.addEventListener("click", () => {
 
 document.body.addEventListener("click", (ev) => {
 	if (ev.target instanceof HTMLElement && ev.target.className === "restart") {
-		window.location.search = "";
+		window.location.reload();
 	}
 });
 
