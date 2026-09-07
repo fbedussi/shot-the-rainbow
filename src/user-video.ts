@@ -101,7 +101,6 @@ export class UserVideo extends HTMLElement {
 					this.stopStream();
 					return;
 				}
-				this.appendChild(this.video);
 
 				this.addEventListener("click", this.takeImage);
 			})
@@ -120,6 +119,13 @@ export class UserVideo extends HTMLElement {
 		this.video.srcObject = stream;
 		this.video.autoplay = true;
 		this.video.playsInline = true;
+
+		if (!this.video) {
+			alert("this.video does not exist");
+		}
+
+		// some browsers never fire loadedmetadata on a video that isn't attached to the document
+		this.appendChild(this.video);
 
 		// videoWidth/videoHeight are only available once metadata has loaded
 		await new Promise<void>((resolve, reject) => {
@@ -152,11 +158,11 @@ export class UserVideo extends HTMLElement {
 				track.stop();
 			});
 		this.video.srcObject = null;
+		this.video.remove();
 	}
 
 	private freezeVideo() {
 		this.stopStream();
-		this.video.remove();
 		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 	}
 
