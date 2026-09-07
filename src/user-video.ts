@@ -120,10 +120,6 @@ export class UserVideo extends HTMLElement {
 		this.video.autoplay = true;
 		this.video.playsInline = true;
 
-		if (!this.video) {
-			alert("this.video does not exist");
-		}
-
 		// some browsers never fire loadedmetadata on a video that isn't attached to the document
 		this.appendChild(this.video);
 
