@@ -1,16 +1,44 @@
-const audioContext = new window.AudioContext();
-const masterGainNode = audioContext.createGain();
-masterGainNode.connect(audioContext.destination);
+let audioContext: AudioContext | undefined;
+let masterGainNode: GainNode | undefined;
 
-const GAIN = 0.15;
-masterGainNode.gain.value = GAIN;
+function initAudio(): { audioContext: AudioContext; masterGainNode: GainNode } {
+	if (!audioContext) {
+		audioContext = new window.AudioContext();
+	}
+	if (!masterGainNode) {
+		masterGainNode = audioContext.createGain();
+		masterGainNode.connect(audioContext.destination);
+
+		const GAIN = 0.15;
+		masterGainNode.gain.value = GAIN;
+	}
+
+	return {
+		audioContext,
+		masterGainNode,
+	};
+}
+
+function getAudioContext(): AudioContext {
+	return initAudio().audioContext;
+}
+
+function getMasterGainNode(): GainNode {
+	return initAudio().masterGainNode;
+}
+
+// Resume from a user gesture so browsers allow audio created after page load.
+export function startAudio() {
+	const context = getAudioContext();
+	return context.resume();
+}
 
 // prevents queued tones from playing silently in the background while the phone is locked/in standby
 document.addEventListener("visibilitychange", () => {
 	if (document.hidden) {
-		audioContext.suspend();
+		getAudioContext().suspend();
 	} else {
-		audioContext.resume();
+		getAudioContext().resume();
 	}
 });
 
@@ -36,21 +64,21 @@ export function playBeep(freq = 400) {
 
 // layers a few inharmonic overtones with a decaying envelope to mimic a bell/chime
 function playBell(freq: number, duration = 400) {
-	const now = audioContext.currentTime;
+	const now = getAudioContext().currentTime;
 	const partials = [1, 2.4, 3.8, 5.4];
 	// boosted since the decay envelope makes it sound quieter than a sustained square tone
 	const gains = [1.8, 0.9, 0.45, 0.22];
 	const end = now + duration / 1000;
 
 	partials.forEach((mult, i) => {
-		const osc = audioContext.createOscillator();
-		const gainNode = audioContext.createGain();
+		const osc = getAudioContext().createOscillator();
+		const gainNode = getAudioContext().createGain();
 		osc.type = "sine";
 		osc.frequency.value = freq * mult;
 		gainNode.gain.setValueAtTime(gains[i], now);
 		gainNode.gain.exponentialRampToValueAtTime(0.0001, end);
 		osc.connect(gainNode);
-		gainNode.connect(masterGainNode);
+		gainNode.connect(getMasterGainNode());
 		osc.start(now);
 		osc.stop(end);
 	});

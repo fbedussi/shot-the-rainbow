@@ -8,6 +8,7 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"type-check": "tsc --noEmit",
+		"test": "vitest run",
 		"preview": "vite preview",
 		"lint": "npx biome check",
 		"lint:fix": "npx @biomejs/biome check --write"
@@ -15,6 +16,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.10",
 		"typescript": "~6.0.2",
-		"vite": "^8.2.2"
+		"vite": "^8.2.2",
+		"vitest": "^4.1.11"
 	}
 }

@@ -1,3 +1,4 @@
+import { averageHsl } from "./color-utils";
 import state from "./state";
 
 export class UserVideo extends HTMLElement {
@@ -94,13 +95,20 @@ export class UserVideo extends HTMLElement {
 	}
 
 	private initVideo() {
-		this.appendChild(this.video);
+		this.startWebcam()
+			.then(() => {
+				if (!this.active) {
+					this.stopStream();
+					return;
+				}
+				this.appendChild(this.video);
 
-		this.startWebcam().catch(() => {
-			alert("Could not access webcam");
-		});
-
-		this.addEventListener("click", this.takeImage);
+				this.addEventListener("click", this.takeImage);
+			})
+			.catch(() => {
+				this.stopStream();
+				alert("Could not access webcam");
+			});
 	}
 
 	private async startWebcam() {
@@ -114,11 +122,19 @@ export class UserVideo extends HTMLElement {
 		this.video.playsInline = true;
 
 		// videoWidth/videoHeight are only available once metadata has loaded
-		await new Promise<void>((resolve) => {
+		await new Promise<void>((resolve, reject) => {
 			if (this.video.readyState >= 1) {
 				resolve();
 			} else {
-				this.video.addEventListener("loadedmetadata", () => resolve(), {
+				const timeoutId = window.setTimeout(() => {
+					this.video.removeEventListener("loadedmetadata", onMetadata);
+					reject(new Error("Camera metadata did not load"));
+				}, 5000);
+				const onMetadata = () => {
+					window.clearTimeout(timeoutId);
+					resolve();
+				};
+				this.video.addEventListener("loadedmetadata", onMetadata, {
 					once: true,
 				});
 			}
@@ -129,32 +145,19 @@ export class UserVideo extends HTMLElement {
 		this.ctx = this.canvas.getContext("2d", { willReadFrequently: true })!;
 	}
 
-	private freezeVideo() {
-		this.video.remove();
-		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
+	private stopStream() {
+		(this.video.srcObject as MediaStream | null)
+			?.getTracks()
+			.forEach((track) => {
+				track.stop();
+			});
+		this.video.srcObject = null;
 	}
 
-	private rgbToHsl(r: number, g: number, b: number): [number, number, number] {
-		r /= 255;
-		g /= 255;
-		b /= 255;
-		const max = Math.max(r, g, b);
-		const min = Math.min(r, g, b);
-		const delta = max - min;
-		const lightness = (max + min) / 2;
-
-		if (delta === 0) return [0, 0, lightness * 100];
-
-		let hue: number;
-		if (max === r) hue = ((g - b) / delta) % 6;
-		else if (max === g) hue = (b - r) / delta + 2;
-		else hue = (r - g) / delta + 4;
-
-		hue *= 60;
-		if (hue < 0) hue += 360;
-
-		const saturation = delta / (1 - Math.abs(2 * lightness - 1));
-		return [hue, saturation * 100, lightness * 100];
+	private freezeVideo() {
+		this.stopStream();
+		this.video.remove();
+		this.style.backgroundColor = `hsl(${this.avgCol[0]}deg ${this.avgCol[1]}% ${this.avgCol[2]}%)`;
 	}
 
 	// maps a click/tap position to the underlying video frame, accounting for object-fit: cover scaling
@@ -176,39 +179,6 @@ export class UserVideo extends HTMLElement {
 		};
 	}
 
-	// hue is circular (0-360deg), so it must be averaged as an angle (via its
-	// sin/cos components) rather than summed directly, otherwise samples near
-	// the 0/360 wrap-around (e.g. red) can average out to the opposite hue
-	private averageHsl(data: Uint8ClampedArray): [number, number, number] {
-		let sumSin = 0;
-		let sumCos = 0;
-		let totalSaturation = 0;
-		let totalLightness = 0;
-		let count = 0;
-		for (let i = 0; i < data.length; i += 4) {
-			const [hue, saturation, lightness] = this.rgbToHsl(
-				data[i],
-				data[i + 1],
-				data[i + 2],
-			);
-			const hueRad = (hue * Math.PI) / 180;
-			sumSin += Math.sin(hueRad);
-			sumCos += Math.cos(hueRad);
-			totalSaturation += saturation;
-			totalLightness += lightness;
-			count++;
-		}
-
-		let avgHue = (Math.atan2(sumSin / count, sumCos / count) * 180) / Math.PI;
-		if (avgHue < 0) avgHue += 360;
-
-		return [
-			Math.round(avgHue),
-			Math.round(totalSaturation / count),
-			Math.round(totalLightness / count),
-		];
-	}
-
 	private getAverageColAt(x: number, y: number): [number, number, number] {
 		if (!this.ctx) {
 			throw new Error("ctx not initialized");
@@ -223,7 +193,7 @@ export class UserVideo extends HTMLElement {
 
 		const { data } = this.ctx.getImageData(left, top, width, height);
 
-		return this.averageHsl(data);
+		return averageHsl(data);
 	}
 
 	private checkColor() {

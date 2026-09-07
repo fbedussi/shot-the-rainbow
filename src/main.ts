@@ -1,4 +1,4 @@
-import { playLooseTune, playWonTune } from "./audio";
+import { playLooseTune, playWonTune, startAudio } from "./audio";
 import { ColorBar } from "./color-bar";
 import "./style.css";
 import state, { type Difficulty } from "./state";
@@ -22,6 +22,7 @@ const instructionsDialog =
 const colorBar = document.querySelector("color-bar")!;
 const path = document.querySelector(".path")!;
 const muteBtn = document.querySelector(".mute")!;
+const difficultyEl = document.querySelector<HTMLElement>(".difficulty span")!;
 
 function createColor() {
 	const targetCol = [
@@ -56,6 +57,7 @@ instructionsDialog.showModal();
 instructionsDialog.querySelector("button")?.addEventListener("click", () => {
 	if (!state.getMuted()) {
 		document.querySelector("user-video")!.setAttribute("muted", "false");
+		startAudio();
 	}
 	startTimer();
 });
@@ -63,13 +65,12 @@ instructionsDialog.querySelector("button")?.addEventListener("click", () => {
 const difficultyRadios = Array.from(
 	document.querySelectorAll<HTMLInputElement>('input[name="difficulty"]'),
 );
+
 difficultyRadios.forEach((difficultyRadio) => {
-	if (difficultyRadio.checked) {
-		if (!state.isDifficulty(difficultyRadio.value)) {
-			throw new Error("wrong difficulty value");
-		}
-		state.setDifficulty(difficultyRadio.value);
-	}
+	const preselectedDifficulty = state.getDifficulty();
+	difficultyRadio.checked = difficultyRadio.value === preselectedDifficulty;
+	difficultyEl.textContent = preselectedDifficulty;
+
 	difficultyRadio.addEventListener("change", onDifficultyChange);
 });
 function onDifficultyChange(ev: Event) {
@@ -78,11 +79,15 @@ function onDifficultyChange(ev: Event) {
 		throw new Error("wrong difficulty value");
 	}
 	state.setDifficulty(target.value);
+	difficultyEl.textContent = target.value;
 }
 
 muteBtn.textContent = state.getMuted() ? "unmute" : "mute";
 muteBtn.addEventListener("click", () => {
 	state.setMuted(!state.getMuted());
+	if (!state.getMuted()) {
+		startAudio();
+	}
 	muteBtn.textContent = state.getMuted() ? "unmute" : "mute";
 });
 

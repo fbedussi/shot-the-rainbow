@@ -56,7 +56,7 @@ export class ColorBar extends HTMLElement {
 	}
 
 	private setTaragetColFromAttr() {
-		const attr = this.getAttribute("target-Col")?.split(",").map(Number);
+		const attr = this.getAttribute("target-col")?.split(",").map(Number);
 		this.targetCol =
 			attr && attr.length === 3 ? [attr[0], attr[1], attr[2]] : this.targetCol;
 		this.target.style.backgroundColor = `hsl(${this.targetCol[0]}deg ${this.targetCol[1]}% ${this.targetCol[2]}%)`;
