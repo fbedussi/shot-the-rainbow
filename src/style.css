@@ -65,6 +65,8 @@ body {
 	overflow: hidden;
 }
 
+/*fallback for older browsers */
+dialog[open],
 dialog:open {
 	top: 50%;
 	left: 50%;
